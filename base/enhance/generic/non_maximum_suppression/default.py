@@ -7,46 +7,6 @@ class DefaultNonMaximumSuppression(BaseNonMaximumSuppression):
     def __init__(self, iou_threshold: float, confidence_threshold: Optional[float] = None, *args, **kwargs):
         super().__init__(iou_threshold, confidence_threshold, *args, **kwargs)
 
-    @staticmethod
-    def _check_n_dimensions(arr: np.ndarray, n_dimensions: int, func_name: str, arg_name: str,
-                            multi_elem: Optional[int] = None):
-        if multi_elem is not None:
-            msg = f"for list element {multi_elem} - "
-        else:
-            msg = ""
-
-        msg += f"in {func_name}() the {arg_name} argument had the wrong number of dimensions: actual={arr.shape}, " \
-               f"expected={n_dimensions}"
-        if len(arr.shape) != n_dimensions:
-            raise Exception(msg)
-
-    @staticmethod
-    def _check_dimension_length(arr: np.ndarray, dimension_ix: int, dimension_length: int, func_name: str,
-                                arg_name: str, multi_elem: Optional[int] = None):
-        if multi_elem is not None:
-            msg = f"for list element {multi_elem} - "
-        else:
-            msg = ""
-
-        msg += f"in {func_name}() the {arg_name} argument had the wrong size at dimension {dimension_ix}: " \
-               f"actual={arr.shape[dimension_ix]}, expected={dimension_length}"
-        if len(arr.shape[dimension_ix] != dimension_length):
-            raise Exception(msg)
-
-    @staticmethod
-    def _compare_first_dimension(arr1: np.ndarray, arr1_ix: int, arr2: np.ndarray, arr2_ix: int, func_name: str,
-                                 arr1_name: str, arr2_name: str, multi_elem: Optional[int] = None):
-        if multi_elem is not None:
-            msg = f"for list element {multi_elem} - "
-        else:
-            msg = ""
-
-        msg += f"in {func_name} the length of dimension {arr1_ix} in {arr1_name} did not equal the length of " \
-               f"dimension {arr2_ix} in {arr2_name}: arr1_length: {arr1.shape[arr1_ix]}, arr2_length: " \
-               f"{arr2.shape[arr2_ix]}"
-        if arr1.shape[arr1_ix] != arr2.shape[arr2_ix]:
-            raise Exception(msg)
-
     def multi_filter_by_confidence(self, coordinates: List[np.ndarray], confidences: Optional[List[np.ndarray]]) -> \
             (List[np.ndarray], List[np.ndarray], np.ndarray, np.ndarray):
         function_name = "multi_filter_by_confidence"
@@ -96,5 +56,12 @@ class DefaultNonMaximumSuppression(BaseNonMaximumSuppression):
 
         return coordinates, confidences
 
-    def transform(self, predictions: List[list], *args, **kwargs) -> list:
-        pass
+    def nms(self, coordinates: np.ndarray) -> (np.ndarray, np.ndarray):
+        return coordinates
+
+    def transform(self, coordinates: List[np.ndarray], confidences: List[np.ndarray], *args, **kwargs) -> \
+            (np.ndarray, np.ndarray):
+        coordinates, confidences, coordinates_combined, confidences_combined = \
+            self.multi_filter_by_confidence(coordinates, confidences)
+
+        coordinates_combined, confidences_combined = self.nms(coordinates_combined)

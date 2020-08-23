@@ -1,4 +1,6 @@
-from typing import List, Optional
+from typing import Optional, List
+from exceptions.array_shape import WrongDimensionShapeError, WrongNumberOfDimensionsError, MismatchedFirstDimensionError
+import numpy as np
 
 
 class BaseNonMaximumSuppression:
@@ -29,7 +31,47 @@ class BaseNonMaximumSuppression:
             raise Exception("confidence threshold cannot be less than 0")
         self.confidence_threshold = confidence_threshold
 
-    def transform(self, predictions: List[list], *args, **kwargs) -> list:
+    @staticmethod
+    def _check_n_dimensions(arr: np.ndarray, n_dimensions: int, func_name: str, arg_name: str,
+                            multi_elem: Optional[int] = None):
+        if multi_elem is not None:
+            msg = f"for list element {multi_elem} - "
+        else:
+            msg = ""
+
+        msg += f"in {func_name}() the {arg_name} argument had the wrong number of dimensions: actual={len(arr.shape)}, " \
+               f"expected={n_dimensions}"
+        if len(arr.shape) != n_dimensions:
+            raise WrongNumberOfDimensionsError(msg)
+
+    @staticmethod
+    def _check_dimension_length(arr: np.ndarray, dimension_ix: int, dimension_length: int, func_name: str,
+                                arg_name: str, multi_elem: Optional[int] = None):
+        if multi_elem is not None:
+            msg = f"for list element {multi_elem} - "
+        else:
+            msg = ""
+
+        msg += f"in {func_name}() the {arg_name} argument had the wrong size at dimension {dimension_ix}: " \
+               f"actual={arr.shape[dimension_ix]}, expected={dimension_length}"
+        if arr.shape[dimension_ix] != dimension_length:
+            raise WrongDimensionShapeError(msg)
+
+    @staticmethod
+    def _compare_first_dimension(arr1: np.ndarray, arr1_ix: int, arr2: np.ndarray, arr2_ix: int, func_name: str,
+                                 arr1_name: str, arr2_name: str, multi_elem: Optional[int] = None):
+        if multi_elem is not None:
+            msg = f"for list element {multi_elem} - "
+        else:
+            msg = ""
+
+        msg += f"in {func_name} the length of dimension {arr1_ix} in {arr1_name} did not equal the length of " \
+               f"dimension {arr2_ix} in {arr2_name}: arr1_length: {arr1.shape[arr1_ix]}, arr2_length: " \
+               f"{arr2.shape[arr2_ix]}"
+        if arr1.shape[arr1_ix] != arr2.shape[arr2_ix]:
+            raise MismatchedFirstDimensionError(msg)
+
+    def transform(self, coordinates: List[np.ndarray], confidences: List[np.ndarray], *args, **kwargs) -> (np.ndarray, np.ndarray):
         """Base transform method for non-maximum suppression.
 
         This is a method of a base class that should be inherited when creating new
