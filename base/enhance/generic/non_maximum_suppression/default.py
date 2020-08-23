@@ -47,7 +47,7 @@ class DefaultNonMaximumSuppression(BaseNonMaximumSuppression):
             self._check_n_dimensions(confidences, 1, function_name, "confidences")
             self._compare_first_dimension(coordinates, 0, confidences, 0, function_name, "coordinates", "confidences")
 
-            confidences_to_keep = 0 if confidences < self.confidence_threshold else 1
+            confidences_to_keep = confidences > self.confidence_threshold
             confidences = confidences[confidences_to_keep]
             coordinates = coordinates[confidences_to_keep, :]
 
