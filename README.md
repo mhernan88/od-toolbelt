@@ -1,3 +1,3 @@
 # detection-enhancer
 
-![badge](https://github.com/mhernan88/detection-enhancer/workflows/PythonPackage/badge.svg)
+![badge](https://github.com/mhernan88/detection-enhancer/workflows/Passing/badge.svg)
