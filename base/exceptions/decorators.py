@@ -9,6 +9,7 @@ def log_exception(l):
                 func(*args, **kwargs)
             except Exception as e:
                 l.error(e.__str__())
-        return wrapper
-    return inner_log_exception
 
+        return wrapper
+
+    return inner_log_exception

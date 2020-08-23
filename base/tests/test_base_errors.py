@@ -1,7 +1,11 @@
 import pytest
 import numpy as np
 from enhance.generic.non_maximum_suppression.default import DefaultNonMaximumSuppression
-from exceptions.array_shape import WrongDimensionShapeError, WrongNumberOfDimensionsError, MismatchedFirstDimensionError
+from exceptions.array_shape import (
+    WrongDimensionShapeError,
+    WrongNumberOfDimensionsError,
+    MismatchedFirstDimensionError,
+)
 
 
 def test_check_n_dimensions():
