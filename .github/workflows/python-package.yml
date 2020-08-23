@@ -41,5 +41,8 @@ jobs:
         pip install .
         cd ..
     - name: Test with pytest
+      env:
+        CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
       run: |
-        pytest
+        coverage run -m pytest
+        codecov
