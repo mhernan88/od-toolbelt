@@ -1,3 +1,3 @@
-# detection-enhancer
+# OD-Toolbelt
 
-![badge](https://github.com/mhernan88/detection-enhancer/workflows/Passing/badge.svg)
+![badge](https://github.com/mhernan88/od-toolbelt/workflows/Passing/badge.svg)
