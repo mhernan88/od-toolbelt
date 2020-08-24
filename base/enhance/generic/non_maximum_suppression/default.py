@@ -179,21 +179,60 @@ class DefaultNonMaximumSuppression(BaseNonMaximumSuppression):
     def nms(self, coordinates: np.ndarray) -> (np.ndarray, np.ndarray):
         return coordinates
 
+    @staticmethod
+    def _get_area(coordinates: np.ndarray) -> np.ndarray:
+        widths = coordinates[:, 1, 1] - coordinates[:, 0, 1]
+        heights = coordinates[:, 2, 0] - coordinates[:, 0, 0]
+        return np.multiply(widths, heights)
+
     def _find_overlap(
         self, coordinates1: np.ndarray, coordinates2: np.ndarray, unsafe=False
     ):
         function_name = "_find_overlap"
 
+        # Coordinates dimension 0 = number of observations.
+        # Coordinates dimension 1 = number of corners (always 4).
+        # Coordinates dimension 2 = number of values per corner (always 2: y and x).
+
         if not unsafe:
-            self._check_n_dimensions(coordinates1, 1, function_name, "coordinates1")
+            self._check_n_dimensions(coordinates1, 2, function_name, "coordinates1")
             self._check_dimension_length(
                 coordinates1, 0, 4, function_name, "coordinates1"
+            )
+            self._check_dimension_length(
+                coordinates1, 1, 2, function_name, "coordinates1"
             )
 
             self._check_n_dimensions(coordinates2, 1, function_name, "coordinates2")
             self._check_dimension_length(
                 coordinates2, 0, 4, function_name, "coordinates2"
             )
+            self._check_dimension_length(
+                coordinates2, 1, 2, function_name, "coordinates2"
+            )
+
+        maxs = np.maximum(coordinates1, coordinates2)
+        mins = np.minimum(coordinates1, coordinates2)
+
+        intersection = np.zeros(coordinates1.shape)
+        intersection[:, 0, :] = maxs[:, 0, :]  # Upper left Y/X
+        intersection[:, 1, 0] = maxs[:, 1, 0]  # Upper right Y
+        intersection[:, 1, 1] = mins[:, 1, 1]  # Upper right X
+        intersection[:, 2, 0] = mins[:, 2, 0]  # Lower left Y
+        intersection[:, 2, 1] = maxs[:, 2, 1]  # Lower left X
+        intersection[:, 3, :] = mins[:, 3, :]  # Lower right Y/X
+
+        coordinates1_areas = self._get_area(coordinates1)
+        coordinates2_areas = self._get_area(coordinates2)
+        intersection_areas = self._get_area(intersection)
+
+        ious = np.divide(
+            intersection_areas,
+            np.subtract(
+                np.add(coordinates1_areas, coordinates2_areas), intersection_areas
+            ),
+        )
+        return ious
 
     def transform(
         self,
