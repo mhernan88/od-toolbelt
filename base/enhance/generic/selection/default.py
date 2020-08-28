@@ -8,15 +8,13 @@ class DefaultSelectionAlgorithm:
         self.confidences1 = confidences1
         self.confidences2 = confidences2
 
-    def dispatch(self, method):
-        if method.lower() == "first":
+    def dispatch(self, method, metric=None):
+        if method.lower() == "max":
             return self._select_first()
-        elif method.lower() == "last":
+        elif method.lower() == "min":
             return self._select_last()
         elif method.lower() == "random":
             return self._select_random()
-        elif method.lower() == "confidence":
-            return self._select_confidence()
         else:
             raise ValueError(
                 "Invalid value provided for method argument | actual={method}, expected='first' "

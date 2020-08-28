@@ -1,6 +1,6 @@
 import numpy as np
 from nptyping import NDArray
-from typing import List, Tuple, Union
+from typing import List, Tuple, Union, Any
 
 from geometry import box
 
@@ -88,12 +88,12 @@ def new_cube(
 
 
 def get_one_point1(
-    cube: NDArray[(-1, 2, 2), np.float64], i: int
+    cube: NDArray[(Any, 2, 2), np.float64], i: int
 ) -> NDArray[(2,), np.float64]:
     return box.get_point1(cube[i, :, :])
 
 
-def get_point1(cube: NDArray[(-1, 2, 2), np.float64]) -> NDArray[(-1, 2), np.float64]:
+def get_point1(cube: NDArray[(Any, 2, 2), np.float64]) -> NDArray[(Any, 2), np.float64]:
     # TODO: Replace with numpy-optimized routine
     pts = np.zeros((cube.shape[0], 2))
     for i in np.arange(0, cube.shape[0]):
@@ -102,12 +102,12 @@ def get_point1(cube: NDArray[(-1, 2, 2), np.float64]) -> NDArray[(-1, 2), np.flo
 
 
 def get_one_point2(
-    cube: NDArray[(-1, 2, 2), np.float64], i: int
+    cube: NDArray[(Any, 2, 2), np.float64], i: int
 ) -> NDArray[(2,), np.float64]:
     return box.get_point2(cube[i, :, :])
 
 
-def get_point2(cube: NDArray[(-1, 2, 2), np.float64]) -> NDArray[(-1, 2), np.float64]:
+def get_point2(cube: NDArray[(Any, 2, 2), np.float64]) -> NDArray[(Any, 2), np.float64]:
     # TODO: Replace with numpy-optimized routine
     pts = np.zeros((cube.shape[0], 2))
     for i in np.arange(0, cube.shape[0]):
@@ -115,11 +115,11 @@ def get_point2(cube: NDArray[(-1, 2, 2), np.float64]) -> NDArray[(-1, 2), np.flo
     return pts
 
 
-def get_one_area(cube: NDArray[(-1, 2, 2), np.float64], i: int) -> float:
+def get_one_area(cube: NDArray[(Any, 2, 2), np.float64], i: int) -> float:
     return box.get_area(cube[i, :, :])
 
 
-def get_area(cube: NDArray[(-1, 2, 2), np.float64]) -> NDArray[np.float64]:
+def get_area(cube: NDArray[(Any, 2, 2), np.float64]) -> NDArray[np.float64]:
     # TODO: Replace with numpy-optimized routine
     areas = np.zeros((cube.shape[0]))
     for i in np.arange(0, cube.shape[0]):
@@ -128,8 +128,8 @@ def get_area(cube: NDArray[(-1, 2, 2), np.float64]) -> NDArray[np.float64]:
 
 
 def one_boxes_overlap(
-    cube1: NDArray[(-1, 2, 2), np.float64],
-    cube2: NDArray[(-1, 2, 2), np.float64],
+    cube1: NDArray[(Any, 2, 2), np.float64],
+    cube2: NDArray[(Any, 2, 2), np.float64],
     i: int,
     round_decimals: int = 8,
 ) -> bool:
@@ -137,8 +137,8 @@ def one_boxes_overlap(
 
 
 def boxes_overlap(
-    cube1: NDArray[(-1, 2, 2), np.float64],
-    cube2: NDArray[(-1, 2, 2), np.float64],
+    cube1: NDArray[(Any, 2, 2), np.float64],
+    cube2: NDArray[(Any, 2, 2), np.float64],
     round_decimals: int = 8,
 ) -> bool:
     # TODO: Replace with numpy-optimized routine
