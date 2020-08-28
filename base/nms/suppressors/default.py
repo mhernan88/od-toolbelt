@@ -1,9 +1,9 @@
-import numpy as np
-from nptyping import NDArray
-from typing import Any, List, Optional, Callable, Dict, Tuple
+import numpy as np  # type: ignore
+from nptyping import NDArray  # type: ignore
+from typing import Any, List, Optional, Callable, Dict, Tuple  # type: ignore
 
-from enhance.filters import multi_filter_by_confidence
-from enhance.iou import get_ious, evaluate_ious
+from nms.filters import multi_filter_by_confidence  # type: ignore
+from nms.iou import get_ious, evaluate_ious  # type: ignore
 
 
 class NonMaximumSuppression:
@@ -18,7 +18,7 @@ class NonMaximumSuppression:
                 NDArray[(Any,), np.float64],
                 Optional[Dict[str, Any]],
             ],
-            Tuple[NDArray[(Any, 2, 2), np.float64], NDArray[(Any, ), np.float64]],
+            Tuple[NDArray[(Any, 2, 2), np.float64], NDArray[(Any,), np.float64]],
         ],
         selection_kwargs,
         exact,
@@ -30,7 +30,7 @@ class NonMaximumSuppression:
 
     def transform(
         self,
-        cubes: List[NDArray(Any, 2, 2), np.float64],
+        cubes: List[NDArray[(Any, 2, 2), np.float64]],
         confidences: Optional[List[NDArray[(Any,), np.float64]]],
     ) -> Tuple[NDArray[(Any, 2, 2), np.float64], NDArray[(Any,), np.float64]]:
         cubes_filtered, confidences_filtered = multi_filter_by_confidence(

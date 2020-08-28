@@ -1,6 +1,6 @@
-import numpy as np
-from nptyping import NDArray
-from typing import Any, Tuple
+import numpy as np  # type: ignore
+from nptyping import NDArray  # type: ignore
+from typing import Any, Tuple  # type: ignore
 
 
 def random_selector(
@@ -25,7 +25,7 @@ def random_selector(
             An array that has a 0th dimension length equal to the 0th dimension length of cube2. This represents
             the confidence associated with each bounding box in cube2.
         **kwargs:
-            Unused kwargs to match expected function signature of enhance/evaluate_ious/evaluate_ious().
+            Unused kwargs to match expected function signature of nms/evaluate_ious/evaluate_ious().
 
     Returns:
         selected_box: An array that implements the requirements of geometry.box.assert_box(). This represents the

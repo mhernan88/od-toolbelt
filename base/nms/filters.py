@@ -1,13 +1,13 @@
-import numpy as np
-from nptyping import NDArray
-from typing import Any, Optional, List
+import numpy as np  # type: ignore
+from nptyping import NDArray  # type: ignore
+from typing import Any, Optional, List, Tuple  # type: ignore
 
 
 def filter_by_confidence(
     cube: NDArray[(Any, 2, 2), np.float64],
     confidences: Optional[NDArray[(Any,), np.float64]] = None,
     confidence_threshold: Optional[float] = None,
-) -> (NDArray[(Any, 2, 2), np.float64], NDArray[(Any,), np.float64]):
+) -> Tuple[NDArray[(Any, 2, 2), np.float64], NDArray[(Any,), np.float64]]:
     """Applies data validation and confidence_threshold filtering to arrays.
 
     If the confidences argument is not None, filters out any elements, from both arrays, where the confidences
@@ -42,10 +42,9 @@ def filter_by_confidence(
 def multi_filter_by_confidence(
     cubes: List[NDArray[(Any, 2, 2), np.float64]],
     confidences: Optional[List[NDArray[(Any,), np.float64]]],
-) -> (
-    NDArray[(Any, 2, 2), np.float64],
-    NDArray[(Any,), np.float64],
-):
+) -> Tuple[
+    NDArray[(Any, 2, 2), np.float64], NDArray[(Any,), np.float64],
+]:
     """Applies data validation and confidence_threshold filtering to multiple sets of arrays.
 
     If the confidences argument is not None, filters out any elements, from both arrays, where the confidences
