@@ -18,8 +18,10 @@ class DefaultSelectionAlgorithm:
         elif method.lower() == "confidence":
             return self._select_confidence()
         else:
-            raise ValueError("Invalid value provided for method argument | actual={method}, expected='first' "
-                             "| 'last' | 'random' | 'confidence'")
+            raise ValueError(
+                "Invalid value provided for method argument | actual={method}, expected='first' "
+                "| 'last' | 'random' | 'confidence'"
+            )
 
     def _select_first(self):
         return self.coordinates1[0], self.confidences1[0]
@@ -28,7 +30,11 @@ class DefaultSelectionAlgorithm:
         return self.coordinates2[-1], self.confidences2[-1]
 
     def _get_all_coords(self):
-        all_coords = np.zeros(self.coordinates2.shape[0] + 1, self.coordinates2.shape[1], self.coordinates2.shape[2])
+        all_coords = np.zeros(
+            self.coordinates2.shape[0] + 1,
+            self.coordinates2.shape[1],
+            self.coordinates2.shape[2],
+        )
         all_coords[0, :, :] = self.coordinates1[0, :, :]
         all_coords[1:, :, :] = self.coordinates2
         return all_coords

@@ -2,3 +2,4 @@ pytest
 coverage
 mypy
 codecov
+flake8
