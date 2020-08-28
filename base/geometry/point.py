@@ -1,5 +1,5 @@
-import numpy as np
-from nptyping import NDArray
+import numpy as np  # type: ignore
+from nptyping import NDArray  # type: ignore
 
 
 # Specification for a point type:

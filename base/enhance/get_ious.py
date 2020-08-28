@@ -1,9 +1,9 @@
-import itertools
-import numpy as np
-from nptyping import NDArray
-from typing import Any
+import itertools  # type: ignore
+import numpy as np  # type: ignore
+from nptyping import NDArray  # type: ignore
+from typing import Any, Tuple  # type: ignore
 
-from geometry import cube
+from geometry import cube  # type: ignore
 
 
 def get_ious(
@@ -12,13 +12,13 @@ def get_ious(
     exact: bool = False,
     *args,
     **kwargs,
-) -> (
+) -> Tuple[
     NDArray[(Any, 2, 2), np.float64],
     NDArray[(Any, 2, 2), np.float64],
     NDArray[(Any,), np.float64],
     NDArray[(Any,), np.float64],
     NDArray[(Any,), np.float64],
-):
+]:
     # For a given image (or set of images), compare each set of coordinates (np.ndarray of shape 4x2) to each
     # other set of coordinates. This is accomplished through a cartesian product of the coordinates list with
     # itself.

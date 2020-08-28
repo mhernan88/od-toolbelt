@@ -1,8 +1,8 @@
-import numpy as np
-from nptyping import NDArray
-from typing import List, Tuple, Union, Any
+import numpy as np  # type: ignore
+from nptyping import NDArray  # type: ignore
+from typing import List, Tuple, Union, Any  # type: ignore
 
-from geometry import box
+from geometry import box  # type: ignore
 
 # Specification for a cube type:
 # Must be a -1 x 2 x 2 numpy array of type np.float64

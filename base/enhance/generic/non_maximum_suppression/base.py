@@ -1,3 +1,5 @@
+# type: ignore
+
 from typing import Optional, List
 from exceptions.array_shape import (
     WrongDimensionShapeError,

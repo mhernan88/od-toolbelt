@@ -1,6 +1,6 @@
-import numpy as np
-from nptyping import NDArray
-from typing import Any, Callable, Iterable, Dict
+import numpy as np  # type: ignore
+from nptyping import NDArray  # type: ignore
+from typing import Any, Callable, Tuple, Dict  # type: ignore
 
 
 def evaluate_ious(
@@ -18,16 +18,15 @@ def evaluate_ious(
             NDArray[(Any,), np.float64],
             str,
             str,
-            ...
+            Dict[str, Any],
         ],
-        (NDArray[(2, 2), np.float64], float),
+        Tuple[NDArray[(2, 2), np.float64], float],
     ],
+    selection_kwargs: Dict[str, Any],
     method: str,
     metric: str,
     round_decimals: int = 8,
-    *args,
-    **kwargs
-):
+) -> Tuple[NDArray[(Any, 2, 2), np.float64], NDArray[(Any,), np.float64]]:
     cube1 = np.round(cube1, decimals=round_decimals)
     cube2 = np.round(cube2, decimals=round_decimals)
 
@@ -64,8 +63,7 @@ def evaluate_ious(
             filtered_confidences2,
             method,
             metric,
-            *args,
-            **kwargs
+            selection_kwargs,
         )
         selected_boxes[i, :] = selected_box
         selected_confidences[i] = selected_confidence

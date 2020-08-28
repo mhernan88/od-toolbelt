@@ -1,7 +1,7 @@
-import numpy as np
-from nptyping import NDArray
+import numpy as np  # type: ignore
+from nptyping import NDArray  # type: ignore
 
-from geometry import point
+from geometry import point  # type: ignore
 
 # Specification for a box type:
 # Must be a 2 x 2 numpy array of type np.float64.

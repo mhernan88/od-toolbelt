@@ -1,3 +1,4 @@
+# type: ignore
 from typing import Optional, List, Union, Any
 import itertools
 import numpy as np
