@@ -7,6 +7,7 @@ setup(
         "enhance",
         "enhance.generic",
         "enhance.generic.non_maximum_suppression",
+        "geometry",
         "exceptions",
     ],
     url="",
