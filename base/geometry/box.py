@@ -134,7 +134,7 @@ def get_area(box: NDArray[(2, 2), np.float64]) -> float:
     return (pt2[0] - pt1[0]) * (pt2[1] - pt1[1])
 
 
-def boxes_overlap(
+def intersection_ok(
     box1: NDArray[(2, 2), np.float64],
     box2: NDArray[(2, 2), np.float64],
     round_decimals=8,
@@ -151,3 +151,23 @@ def boxes_overlap(
     if np.any(diff1 <= 0) or np.any(diff2 <= 0):
         return False
     return True
+
+
+def intersection(box1: NDArray[(2, 2), np.float64], box2: NDArray[(2, 2), np.float64]):
+    box1_pt1 = get_point1(box1)
+    box1_pt2 = get_point2(box1)
+    box2_pt1 = get_point1(box2)
+    box2_pt2 = get_point2(box2)
+
+    common_pt1 = np.max((box1_pt1, box2_pt1), axis=0)
+    common_pt2 = np.min((box1_pt2, box2_pt2), axis=0)
+
+    wh = np.abs(np.subtract(common_pt2, common_pt1))
+    return np.product(wh)
+
+
+def union(box1: NDArray[(2, 2), np.float64], box2: NDArray[(2, 2), np.float64]):
+    box1_area = get_area(box1)
+    box2_area = get_area(box2)
+    overlap_area = intersection(box1, box2)
+    return box1_area + box2_area - overlap_area

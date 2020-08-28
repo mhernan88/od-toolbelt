@@ -52,12 +52,12 @@ def test_get_area1():
 def test_boxes_overlap1():
     arr1 = np.array(((0.4, 0.4), (0.8, 0.8))).astype(np.float64)
     arr2 = np.array(((0.5, 0.5), (0.9, 0.9))).astype(np.float64)
-    overlap = box.boxes_overlap(arr1, arr2)
+    overlap = box.intersection_ok(arr1, arr2)
     assert overlap
 
 
 def test_boxes_overlap2():
     arr1 = np.array(((0.4, 0.4), (0.8, 0.8))).astype(np.float64)
     arr2 = np.array(((0.9, 0.9), (0.95, 0.95))).astype(np.float64)
-    overlap = box.boxes_overlap(arr1, arr2)
+    overlap = box.intersection_ok(arr1, arr2)
     assert not overlap

@@ -1,16 +1,22 @@
 from typing import Optional, List, Union, Any
-# import itertools
+import itertools
 import numpy as np
 from nptyping import NDArray
 
+from geometry import box
 from enhance.generic.non_maximum_suppression.base import BaseNonMaximumSuppression
+
 # from enhance.generic.selection.default import DefaultSelectionAlgorithm
 # from geometry import box
 
 
 class DefaultNonMaximumSuppression(BaseNonMaximumSuppression):
     metric_values = ("confidence",)
-    method_values = ("min", "max", "random",)
+    method_values = (
+        "min",
+        "max",
+        "random",
+    )
 
     def __init__(
         self,
@@ -22,8 +28,15 @@ class DefaultNonMaximumSuppression(BaseNonMaximumSuppression):
         super().__init__(iou_threshold, confidence_threshold, *args, **kwargs)
 
     def multi_filter_by_confidence(
-        self, cubes: List[NDArray[(Any, 2, 2), np.float64]], confidences: Optional[List[NDArray[(Any, ), np.float64]]]
-    ) -> (List[NDArray[(Any, 2, 2), np.float64]], List[NDArray[(Any, ), np.float64]], NDArray[(Any, 2, 2), np.float64], NDArray[(Any, ), np.float64]):
+        self,
+        cubes: List[NDArray[(Any, 2, 2), np.float64]],
+        confidences: Optional[List[NDArray[(Any,), np.float64]]],
+    ) -> (
+        List[NDArray[(Any, 2, 2), np.float64]],
+        List[NDArray[(Any,), np.float64]],
+        NDArray[(Any, 2, 2), np.float64],
+        NDArray[(Any,), np.float64],
+    ):
         """Applies data validation and confidence_threshold filtering to multiple sets of arrays.
 
         Validates that arrays are the right shape, and then, if the confidences argument is not None, filters out any
@@ -66,8 +79,10 @@ class DefaultNonMaximumSuppression(BaseNonMaximumSuppression):
         return cubes, confidences, cubes_combined, confidences_combined
 
     def filter_by_confidence(
-        self, cube: NDArray[(Any, 2, 2), np.float64], confidences: Optional[NDArray[(Any, ), np.float64]] = None
-    ) -> (NDArray[(Any, 2, 2), np.float64], NDArray[(Any, ), np.float64]):
+        self,
+        cube: NDArray[(Any, 2, 2), np.float64],
+        confidences: Optional[NDArray[(Any,), np.float64]] = None,
+    ) -> (NDArray[(Any, 2, 2), np.float64], NDArray[(Any,), np.float64]):
         """Applies data validation and confidence_threshold filtering to arrays.
 
         If the confidences argument is not None, filters out any elements, from both arrays, where the confidences
@@ -96,73 +111,74 @@ class DefaultNonMaximumSuppression(BaseNonMaximumSuppression):
             return None, None
 
         return cube, confidences
-#
-#     def nms(
-#         self,
-#         coordinates: np.ndarray,
-#         confidences: np.ndarray,
-#         exact: bool = False,
-#         *args,
-#         **kwargs,
-#     ) -> (np.ndarray, np.ndarray):
-#
-#         # For a given image (or set of images), compare each set of coordinates (np.ndarray of shape 4x2) to each
-#         # other set of coordinates. This is accomplished through a cartesian product of the coordinates list with
-#         # itself.
-#         coordinates_cartesian = itertools.product(coordinates, coordinates)
-#         confidences_cartesian = itertools.product(confidences, confidences)
-#
-#         # We only want to calculate the iou for coordinate pairs that have not yet been evaluated. To accomplish that
-#         # we can add hashes of any already-checked coordinates to this set.
-#         checked_coordinates = set()
-#
-#         n = coordinates.shape[0]
-#
-#         # This output_shape is the number of unique pairs we should be evaluating.
-#         output_shape = int((n ** 2 - n) / 2)
-#
-#         # The below arrays are used to capture data from the below loop.
-#         ious = np.zeros(output_shape)
-#         arr1 = np.zeros((output_shape, coordinates.shape[1], coordinates.shape[2]))
-#         arr1_confidences = np.zeros(output_shape)
-#         arr2 = np.zeros((output_shape, coordinates.shape[1], coordinates.shape[2]))
-#         arr2_confidences = np.zeros(output_shape)
-#
-#         i = 0
-#         # Enhancement: Vectorize this loop - or move to Cython.
-#         for coord_prod, conf_prod in zip(coordinates_cartesian, confidences_cartesian):
-#             if exact:
-#                 if np.array_equal(coord_prod[0], coord_prod[1], *args, **kwargs):
-#                     continue
-#             else:
-#                 if np.allclose(coord_prod[0], coord_prod[1], *args, **kwargs):
-#                     continue
-#
-#             hash_prod0 = hash(coord_prod[0].tobytes())
-#             hash_prod1 = hash(coord_prod[1].tobytes())
-#             hash_prod = hash_prod0 * hash_prod1
-#
-#             if hash_prod in checked_coordinates:
-#                 continue
-#             checked_coordinates.add(hash_prod)
-#
-#             if not self._overlap(coord_prod[0], coord_prod[1]):
-#                 ious[i] = 0.0
-#             else:
-#                 ious[i] = self._get_ious(
-#                     np.expand_dims(coord_prod[0], 0), np.expand_dims(coord_prod[1], 0)
-#                 )
-#
-#             arr1[i] = coord_prod[0]
-#             arr1_confidences[i] = conf_prod[0]
-#             arr2[i] = coord_prod[1]
-#             arr2_confidences[i] = conf_prod[1]
-#             i += 1
-#
-#             self._evaluate_ious(
-#                 ious, arr1, arr1_confidences, arr2, arr2_confidences, "first"
-#             )
-#
+
+    def get_ious(
+        self,
+        cube: NDArray[(Any, 2, 2), np.float64],
+        confidences: NDArray[(Any,), np.float64],
+        exact: bool = False,
+        *args,
+        **kwargs,
+    ) -> (np.ndarray, np.ndarray):
+
+        # For a given image (or set of images), compare each set of coordinates (np.ndarray of shape 4x2) to each
+        # other set of coordinates. This is accomplished through a cartesian product of the coordinates list with
+        # itself.
+        cube_cartesian = itertools.product(cube, cube)
+        confidences_cartesian = itertools.product(confidences, confidences)
+
+        # We only want to calculate the iou for coordinate pairs that have not yet been evaluated. To accomplish that
+        # we can add hashes of any already-checked coordinates to this set.
+        checked_coordinates = set()
+
+        # This output_shape is the number of unique pairs we should be evaluating.
+        n = cube.shape[0]
+        output_shape = int((n ** 2 - n) / 2)
+
+        # The below arrays are used to capture data from the below loop.
+        ious = np.zeros(output_shape)
+        arr1 = np.zeros((output_shape, cube.shape[1], cube.shape[2]))
+        arr1_confidences = np.zeros(output_shape)
+        arr2 = np.zeros((output_shape, cube.shape[1], cube.shape[2]))
+        arr2_confidences = np.zeros(output_shape)
+
+        i = 0
+        # Enhancement: Vectorize this loop - or move to Cython.
+        for box, conf in zip(cube_cartesian, confidences_cartesian):
+            if exact:
+                if np.array_equal(box[0], box[1], *args, **kwargs):
+                    continue
+            else:
+                if np.allclose(box[0], box[1], *args, **kwargs):
+                    continue
+
+            hash_prod0 = hash(box[0].tobytes())
+            hash_prod1 = hash(box[1].tobytes())
+            hash_prod = hash_prod0 * hash_prod1
+
+            if hash_prod in checked_coordinates:
+                continue
+            checked_coordinates.add(hash_prod)
+
+            if not box.boxes_overlap(box[0], box[1]):
+                ious[i] = 0.0
+            else:
+                pass
+                # ious[i] = self._get_ious(
+                #     np.expand_dims(coord_prod[0], 0), np.expand_dims(coord_prod[1], 0)
+                # )
+
+            arr1[i] = box[0]
+            arr1_confidences[i] = conf[0]
+            arr2[i] = box[1]
+            arr2_confidences[i] = conf[1]
+            i += 1
+        return arr1, arr2, arr1_confidences, arr2_confidences, ious
+        # self._evaluate_ious(
+        #     ious, arr1, arr1_confidences, arr2, arr2_confidences, "first"
+        # )
+
+
 #         # TODO: Evaluate each box, evaluate which other boxes exceed IOU. Throw out all boxes, except for the most
 #         # TODO: confident where IOU > IOU_threshold
 #

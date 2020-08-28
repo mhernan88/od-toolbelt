@@ -109,7 +109,7 @@ def test_one_boxes_overlap():
     arr2[0, :, :] = box2_1
     arr2[1, :, :] = box2_2
 
-    assert cube.one_boxes_overlap(arr1, arr2, 0)
+    assert cube.one_intersection_ok(arr1, arr2, 0)
 
 
 def test_boxes_overlap():
@@ -125,6 +125,6 @@ def test_boxes_overlap():
     arr2[0, :, :] = box2_1
     arr2[1, :, :] = box2_2
 
-    overlaps = cube.boxes_overlap(arr1, arr2)
+    overlaps = cube.intersection_ok(arr1, arr2)
     assert overlaps[0]
     assert not overlaps[1]

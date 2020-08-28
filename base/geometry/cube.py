@@ -127,16 +127,16 @@ def get_area(cube: NDArray[(Any, 2, 2), np.float64]) -> NDArray[np.float64]:
     return areas
 
 
-def one_boxes_overlap(
+def one_intersection_ok(
     cube1: NDArray[(Any, 2, 2), np.float64],
     cube2: NDArray[(Any, 2, 2), np.float64],
     i: int,
     round_decimals: int = 8,
 ) -> bool:
-    return box.boxes_overlap(cube1[i, :, :], cube2[i, :, :], round_decimals)
+    return box.intersection_ok(cube1[i, :, :], cube2[i, :, :], round_decimals)
 
 
-def boxes_overlap(
+def intersection_ok(
     cube1: NDArray[(Any, 2, 2), np.float64],
     cube2: NDArray[(Any, 2, 2), np.float64],
     round_decimals: int = 8,
@@ -144,5 +144,43 @@ def boxes_overlap(
     # TODO: Replace with numpy-optimized routine
     overlaps = np.full(cube1.shape[0], False, np.bool)
     for i in np.arange(0, cube1.shape[0]):
-        overlaps[i] = box.boxes_overlap(cube1[i, :, :], cube2[i, :, :], round_decimals)
+        overlaps[i] = box.intersection_ok(
+            cube1[i, :, :], cube2[i, :, :], round_decimals
+        )
     return overlaps
+
+
+def one_intersection(
+    cube1: NDArray[(Any, 2, 2), np.float64],
+    cube2: NDArray[(Any, 2, 2), np.float64],
+    i: int,
+) -> float:
+    return box.intersection(cube1[i, :, :], cube2[i, :, :])
+
+
+def intersection(
+    cube1: NDArray[(Any, 2, 2), np.float64], cube2: NDArray[(Any, 2, 2), np.float64]
+) -> float:
+    # TODO: Replace with numpy-optimized routine
+    overlaps = np.zeros(cube1.shape[0])
+    for i in np.arange(0, cube1.shape[0]):
+        overlaps[i] = box.intersection(cube1[i, :, :], cube2[i, :, :])
+    return overlaps
+
+
+def one_union(
+    cube1: NDArray[(Any, 2, 2), np.float64],
+    cube2: NDArray[(Any, 2, 2), np.float64],
+    i: int,
+) -> float:
+    return box.union(cube1[i, :, :], cube2[i, :, :])
+
+
+def union(
+    cube1: NDArray[(Any, 2, 2), np.float64], cube2: NDArray[(Any, 2, 2), np.float64]
+) -> float:
+    # TODO: Replace with numpy-optimized routine
+    unions = np.zeros(cube1.shape[0])
+    for i in np.arange(0, cube1.shape[0]):
+        unions[i] = box.union(cube1[i, :, :], cube2[i, :, :])
+    return unions
