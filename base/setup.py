@@ -5,10 +5,8 @@ setup(
     version="0.0.1",
     packages=[
         "enhance",
-        "enhance.generic",
-        "enhance.generic.non_maximum_suppression",
         "geometry",
-        "exceptions",
+        "selectors",
     ],
     url="",
     license="",
