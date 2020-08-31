@@ -3,3 +3,6 @@ coverage
 mypy
 codecov
 flake8
+requests
+pillow
+rootpath

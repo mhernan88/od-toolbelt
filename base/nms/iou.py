@@ -94,7 +94,7 @@ def evaluate_ious(
     cube1 = np.round(cube1, decimals=round_decimals)
     cube2 = np.round(cube2, decimals=round_decimals)
 
-    selected_boxes = np.zeros(cube1.shape[0], 2)
+    selected_boxes = np.zeros((cube1.shape[0], 2, 2))
     selected_confidences = np.zeros(cube1.shape[0])
 
     unique_coords = np.unique(cube1, axis=0)
@@ -108,9 +108,9 @@ def evaluate_ious(
         coords1_different_from_this_unique_coord = np.sum(
             np.sum(coords1_minus_this_unique_coord, axis=2), axis=1
         )
-        ixs_to_evaluate = np.argwhere(
-            coords1_different_from_this_unique_coord == 0 and ious >= iou_threshold
-        )
+        ixs_to_evaluate = np.argwhere(np.logical_and(
+            (coords1_different_from_this_unique_coord == 0), (ious >= iou_threshold)
+        ))
 
         # Next, pull those indexes from the first dimension of the below arrays.
         filtered_cube1 = cube1[ixs_to_evaluate, :, :]  # Should all be the same.
@@ -121,12 +121,12 @@ def evaluate_ious(
         ]  # Should be different values.
 
         selected_box, selected_confidence = selection_func(
-            filtered_cube1,
-            filtered_cube2,
-            filtered_confidences1,
-            filtered_confidences2,
+            filtered_cube1[:, 0, :, :],  # TODO: Check that this indexing is right.
+            filtered_cube2[:, 0, :, :],  # TODO: Check that this indexing is right.
+            filtered_confidences1.ravel(),
+            filtered_confidences2.ravel(),
             selection_kwargs,
         )
-        selected_boxes[i, :] = selected_box
+        selected_boxes[i, :, :] = selected_box
         selected_confidences[i] = selected_confidence
     return selected_boxes, selected_confidences

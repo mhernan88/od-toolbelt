@@ -8,7 +8,7 @@ def random_selector(
     cube2: NDArray[(Any, 2, 2), np.float64],
     confidences1: NDArray[(Any,), np.float64],
     confidences2: NDArray[(Any,), np.float64],
-    **kwargs
+    kwargs
 ) -> Tuple[NDArray[(2, 2), np.float64], float]:
     """Chooses a random box from two cubes.
 
@@ -38,14 +38,14 @@ def random_selector(
     """
     assert cube1.shape[0] == confidences1.shape[0]
     assert cube2.shape[0] == confidences2.shape[0]
-    cube_combined = np.array((cube2.shape[0] + 1, 2, 2), dtype=np.float64)
+    cube_combined = np.zeros((cube2.shape[0] + 1, 2, 2), dtype=np.float64)
     cube_combined[: cube2.shape[0], :, :] = cube2
     cube_combined[-1, :, :] = cube1[0, :, :]
 
-    confidences_combined = np.array(confidences2[0] + 1, dtype=np.float64)
-    confidences_combined[: confidences2.shape[0]] = confidences2
+    confidences_combined = np.zeros(confidences2.shape[0] + 1, dtype=np.float64)
+    confidences_combined[: confidences2.shape[0]] = confidences2  # TODO: Check that this indexing is right.
     confidences_combined[-1] = confidences1[0]
 
-    selected_ix = np.random.choice(np.arange(0, cube_combined.shape[0]))
+    selected_ix = np.random.choice(np.arange(0, cube_combined.shape[0] - 1))  # TODO: Check that this indexing is right.
 
     return cube_combined[selected_ix, :, :], confidences_combined[selected_ix]
