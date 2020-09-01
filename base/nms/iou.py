@@ -129,4 +129,5 @@ def evaluate_ious(
         )
         selected_boxes[i, :, :] = selected_box
         selected_confidences[i] = selected_confidence
-    return selected_boxes, selected_confidences
+    final_filter = np.argwhere(selected_confidences > 0)
+    return selected_boxes[selected_confidences > 0, :, :], selected_confidences[selected_confidences > 0]

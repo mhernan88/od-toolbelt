@@ -44,7 +44,7 @@ class NonMaximumSuppression:
         cube1, cube2, confidences1, confidences2, ious = get_ious(
             cubes_filtered, confidences_filtered, self.exact
         )
-        return evaluate_ious(
+        boxes, confs = evaluate_ious(
             ious,
             cube1,
             confidences1,
@@ -54,3 +54,7 @@ class NonMaximumSuppression:
             self.selection_func,
             self.selection_kwargs,
         )
+        assert boxes is not None
+        assert confs is not None
+        assert boxes.shape[0] == confs.shape[0]
+        return boxes, confs
