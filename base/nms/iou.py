@@ -71,6 +71,32 @@ def get_ious(
     return arr1, arr2, arr1_confidences, arr2_confidences, ious
 
 
+def filter_used_boxes(filtered_cube1, filtered_confidences1, filtered_cube2, filtered_confidences2, selected_boxes_hash):
+    # TODO: Optimize this loop.
+    # Here, we're skipping evaluating any boxes that we've already selected.
+    x = len(filtered_confidences2)  # TODO: Remove
+    ixs_to_evaluate2 = []
+    for j in np.arange(0, filtered_cube2.shape[0]):
+        fc_hash = hash(filtered_cube2[j, :, :].tobytes())
+        if fc_hash not in selected_boxes_hash:
+            ixs_to_evaluate2.append(j)
+        selected_boxes_hash.add(fc_hash)
+    if filtered_cube1.shape[0] > 0:
+        fc_hash = hash(filtered_cube1[0, :, :].tobytes())
+        selected_boxes_hash.add(fc_hash)
+        if fc_hash in selected_boxes_hash:
+            filtered_cube1 = None
+            filtered_confidences1 = None
+    else:
+        filtered_cube1 = None
+        filtered_confidences1 = None
+    filtered_cube2 = filtered_cube2[ixs_to_evaluate2, :, :]
+    filtered_confidences2 = filtered_confidences2[ixs_to_evaluate2]
+
+    print(f"Went from {x} candidate boxes to {len(filtered_confidences2)} candidate boxes")  # TODO: Remove
+    return filtered_cube1, filtered_confidences1, filtered_cube2, filtered_confidences2, selected_boxes_hash
+
+
 def evaluate_ious(
     ious: NDArray[(Any,), np.float64],
     cube1: NDArray[(Any, 2, 2), np.float64],
@@ -95,6 +121,7 @@ def evaluate_ious(
     cube2 = np.round(cube2, decimals=round_decimals)
 
     selected_boxes = np.zeros((cube1.shape[0], 2, 2))
+    selected_boxes_hash = set()
     selected_confidences = np.zeros(cube1.shape[0])
 
     unique_coords = np.unique(cube1, axis=0)
@@ -112,6 +139,8 @@ def evaluate_ious(
             (coords1_different_from_this_unique_coord == 0), (ious >= iou_threshold)
         ))
 
+
+        # TODO: Need to filter out cube1/conf1 if it is in the selected_boxes_hash too.
         # Next, pull those indexes from the first dimension of the below arrays.
         filtered_cube1 = cube1[ixs_to_evaluate, :, :]  # Should all be the same.
         filtered_confidences1 = confidences1[ixs_to_evaluate]  # Should all be the same.
@@ -120,14 +149,26 @@ def evaluate_ious(
             ixs_to_evaluate
         ]  # Should be different values.
 
-        selected_box, selected_confidence = selection_func(
-            filtered_cube1[:, 0, :, :],  # TODO: Check that this indexing is right.
-            filtered_cube2[:, 0, :, :],  # TODO: Check that this indexing is right.
-            filtered_confidences1.ravel(),
-            filtered_confidences2.ravel(),
-            selection_kwargs,
-        )
-        selected_boxes[i, :, :] = selected_box
-        selected_confidences[i] = selected_confidence
-    final_filter = np.argwhere(selected_confidences > 0)
+        filtered_cube1, filtered_confidences1, filtered_cube2, filtered_confidences2, selected_boxes_hash = filter_used_boxes(filtered_cube1, filtered_confidences1, filtered_cube2, filtered_confidences2, selected_boxes_hash)
+
+        if filtered_cube1 is not None:
+            selected_box, selected_confidence = selection_func(
+                filtered_cube1[:, 0, :, :],
+                filtered_cube2[:, 0, :, :],
+                filtered_confidences1.ravel(),
+                filtered_confidences2.ravel(),
+                selection_kwargs,
+            )
+        else:
+            selected_box, selected_confidence = selection_func(
+                filtered_cube1,
+                filtered_cube2[:, 0, :, :],
+                filtered_confidences1,
+                filtered_confidences2.ravel(),
+                selection_kwargs
+            )
+
+        if selected_box.shape[0] > 0:
+            selected_boxes[i, :, :] = selected_box
+            selected_confidences[i] = selected_confidence
     return selected_boxes[selected_confidences > 0, :, :], selected_confidences[selected_confidences > 0]

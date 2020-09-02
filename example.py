@@ -107,7 +107,7 @@ def apply_nms():
     logger.debug("beginning example")
     boxes, confs, img, shape = get_data(n_boxes=7, std=0.03, show=False)
 
-    nms = NonMaximumSuppression(iou_threshold=0.01, selection_func=random_selector, logger=logger, confidence_threshold=0.3, selection_kwargs=None, exact=False)
+    nms = NonMaximumSuppression(iou_threshold=0.3, selection_func=random_selector, logger=logger, confidence_threshold=0.3, selection_kwargs=None, exact=False)
     pboxes, pconfs = nms.transform(boxes, confs)
 
     bboxes = to_list_multi(np.asarray(pboxes), shape)

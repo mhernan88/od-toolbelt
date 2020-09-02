@@ -36,16 +36,27 @@ def random_selector(
         AssertionError: This occurs if the 0th dimension of cube1 and confidences1 do not match or if the 0th
             dimension of cube2 and confidences2 do not match.
     """
-    assert cube1.shape[0] == confidences1.shape[0]
-    assert cube2.shape[0] == confidences2.shape[0]
-    cube_combined = np.zeros((cube2.shape[0] + 1, 2, 2), dtype=np.float64)
-    cube_combined[: cube2.shape[0], :, :] = cube2
-    cube_combined[-1, :, :] = cube1[0, :, :]
+    # assert cube1.shape[0] == confidences1.shape[0]
+    # assert cube2.shape[0] == confidences2.shape[0]
+    #
+    if cube2.shape[0] == 0:
+        return cube2, confidences2
 
-    confidences_combined = np.zeros(confidences2.shape[0] + 1, dtype=np.float64)
-    confidences_combined[: confidences2.shape[0]] = confidences2  # TODO: Check that this indexing is right.
-    confidences_combined[-1] = confidences1[0]
+    if cube1 is not None:
+        cube_combined = np.zeros((cube2.shape[0] + 1, 2, 2), dtype=np.float64)
+        cube_combined[: cube2.shape[0], :, :] = cube2
+        cube_combined[-1, :, :] = cube1[0, :, :]
+        confidences_combined = np.zeros(confidences2.shape[0] + 1, dtype=np.float64)
+        confidences_combined[: confidences2.shape[0]] = confidences2  # TODO: Check that this indexing is right.
+        confidences_combined[-1] = confidences1[0]
+    else:
+        cube_combined = cube2
+        confidences_combined = confidences2
 
-    selected_ix = np.random.choice(np.arange(0, cube_combined.shape[0] - 1))  # TODO: Check that this indexing is right.
 
-    return cube_combined[selected_ix, :, :], confidences_combined[selected_ix]
+    assert cube_combined.shape[0] > 0
+    if cube_combined.shape[0] == 1:
+        return cube_combined[0, :, :], confidences_combined[0]
+    else:
+        selected_ix = np.random.choice(np.arange(0, cube_combined.shape[0] - 1))  # TODO: Check that this indexing is right.
+        return cube_combined[selected_ix, :, :], confidences_combined[selected_ix]
