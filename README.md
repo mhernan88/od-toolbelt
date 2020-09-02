@@ -6,6 +6,8 @@
 
 ---
 
+**This library is still under active development and is not yet producing stable results. Use at your own risk.**
+
 OD-Toolbelt is a suite of tools for use with image object detection models.
 
 OD-Toolbelt takes raw bounding box predictions from the object detection model of your choosing, post-processes them,
