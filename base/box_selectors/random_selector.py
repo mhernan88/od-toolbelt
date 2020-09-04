@@ -1,6 +1,62 @@
+# Copyright Michael Ayabarreno-Hernandez. All rights reserved.
+
 import numpy as np  # type: ignore
 from nptyping import NDArray  # type: ignore
-from typing import Any, Tuple  # type: ignore
+from typing import Any, Tuple, Dict  # type: ignore
+
+
+from base.box_selectors.base_selector import BaseSelector  # type: ignore
+
+
+class RandomSelector(BaseSelector):
+    def __init__(self):
+        super().__init__()
+
+    def select(
+            self,
+            box: NDArray[(Any, 2, 2), np.float64],
+            cube: NDArray[(Any, 2, 2), np.float64],
+            box_conf: NDArray[(Any,), np.float64],
+            cube_confs: NDArray[(Any,), np.float64],
+            kwawrgs: Dict[str, Any],
+    ) -> Tuple[NDArray[(2, 2), np.float64], float]:
+        """
+        Args:
+            box: Cube1 box. Can shape (0 or 1, 2, 2).
+            cube: Cube2. Can be shape (Any, 2, 2).
+            box_conf: Cube1 box confidence. Can be shape (0 or 1,).
+            cube_confs: Cube2 box confidences. Can be shape (Any,).
+
+        Returns:
+            selected_box: Selected box from box and cube.
+            selected_conf: Selected confidence from box_conf and cube_confs.
+        """
+        assert box is not None
+        assert len(box.shape) == 2
+        assert cube is not None
+        assert box_conf is not None
+        try:
+            assert isinstance(box_conf, float)
+        except Exception as e:
+            print(box_conf)
+            raise e
+        assert cube_confs is not None
+
+        print(cube.shape)
+        cube = np.append(cube, np.expand_dims(box, 0), axis=0)
+        cube_confs = np.append(cube_confs, box_conf)
+        try:
+            if cube.shape[0] == 1:
+                return cube[0, :, :], cube_confs[0]
+            else:
+                ix = np.random.choice(np.arange(0, cube.shape[0] - 1))
+        except Exception as e:
+            print(f"CUBE_SHAPE: {cube.shape}")
+            raise e
+
+        print(cube.shape)
+        print(cube_confs.shape)
+        return cube[ix, :, :], cube_confs[ix]
 
 
 def random_selector(
@@ -42,7 +98,7 @@ def random_selector(
     if cube2.shape[0] == 0:
         return cube2, confidences2
 
-    if cube1 is not None:
+    if cube1 is not None and cube1.shape[0] > 0:
         cube_combined = np.zeros((cube2.shape[0] + 1, 2, 2), dtype=np.float64)
         cube_combined[: cube2.shape[0], :, :] = cube2
         cube_combined[-1, :, :] = cube1[0, :, :]
@@ -52,7 +108,6 @@ def random_selector(
     else:
         cube_combined = cube2
         confidences_combined = confidences2
-
 
     assert cube_combined.shape[0] > 0
     if cube_combined.shape[0] == 1:

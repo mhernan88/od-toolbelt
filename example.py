@@ -10,7 +10,9 @@ from nptyping import NDArray
 from typing import Any, List, Tuple
 
 from nms.suppressors.default import NonMaximumSuppression
-from box_selectors.random_selector import random_selector
+from nms.iou import DefaultNonMaximumSuppression
+from box_selectors.random_selector import RandomSelector, random_selector
+from box_selectors.all_selector import AllSelector
 
 logger = logging.getLogger("nms_example")
 logger.setLevel(logging.DEBUG)
@@ -105,9 +107,13 @@ def get_data(n_boxes: int, std: float, show=False):
 
 def apply_nms():
     logger.debug("beginning example")
-    boxes, confs, img, shape = get_data(n_boxes=7, std=0.03, show=False)
+    boxes, confs, img, shape = get_data(n_boxes=16, std=0.03, show=False)
 
-    nms = NonMaximumSuppression(iou_threshold=0.3, selection_func=random_selector, logger=logger, confidence_threshold=0.3, selection_kwargs=None, exact=False)
+    selector = RandomSelector()
+
+    # nms = NonMaximumSuppression(iou_threshold=0.3, selection_func=random_selector, logger=logger, confidence_threshold=0.3, selection_kwargs=None, exact=False)
+    # pboxes, pconfs = nms.transform(boxes, confs)
+    nms = DefaultNonMaximumSuppression(iou_threshold=0.15, selection_func=selector, selection_kwargs=dict())
     pboxes, pconfs = nms.transform(boxes, confs)
 
     bboxes = to_list_multi(np.asarray(pboxes), shape)
