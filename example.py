@@ -1,7 +1,6 @@
 import logging
 import rootpath
 import requests
-import numpy as np
 from pathlib import Path
 from PIL import Image, ImageDraw
 from itertools import product
@@ -97,13 +96,14 @@ def draw_cartesian(boxes: List[List[Tuple[int, int]]], img_raw: Image.Image):
             print(f"BOX2: {box2}")
             print(f"ARR1: {boxes_cart[i][0]}")
             print(f"ARR2: {boxes_cart[i][1]}")
-        if 0 <= this_iou <= 1:
-            img.show()
+        if 0 < this_iou <= 1:
+            # img.show()
             print(f"OK {i+1} of {len(boxes_cart)}")
         elif 0 <= this_iou:
+            img.show()
             print(f"Skipped {i+1} of {len(boxes_cart)} because it was > 1")
-        # elif this_iou < 1:
-        #     print(f"Skipped {i} of {len(boxes_cart)} because it was <= 0")
+        elif this_iou < 1:
+            print(f"Skipped {i} of {len(boxes_cart)} because it was <= 0")
         else:
             print(f"Skipped {i+1} of {len(boxes_cart)}")
     print("DONE")
@@ -155,13 +155,18 @@ def get_data(n_boxes: int, std: float, show=False):
 
 def apply_nms():
     logger.debug("beginning example")
-    boxes, confs, img, shape = get_data(n_boxes=5, std=0.03, show=False)
+    boxes, confs, img, shape = get_data(n_boxes=15, std=0.03, show=False)
 
     selector = RandomSelector()
     metric = DefaultIntersectionOverTheUnion()
 
-    nms = DefaultNonMaximumSuppression(metric_threshold=0.1, selector=selector, metric=metric, confidence_threshold=0.5)
-    pboxes, pconfs = nms.transform(boxes, confs)
+    nms = DefaultNonMaximumSuppression(metric_threshold=0.1, selector=selector, metric=metric)
+    # pboxes, pconfs = nms.transform(boxes, confs)
+    boxes = boxes[confs > 0.5, :, :]
+    ixs = nms.transform(boxes)
+
+    pboxes = boxes[ixs, :, :]
+
 
     print(len(pboxes))
     bboxes = to_list_multi(np.asarray(pboxes), shape)

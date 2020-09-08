@@ -170,8 +170,6 @@ def intersection(box1: NDArray[(2, 2), np.float64], box2: NDArray[(2, 2), np.flo
     if box1_pt1[0] >= box2_pt1[0] and box1_pt1[1] >= box2_pt1[1] and box1_pt2[0] <= box2_pt2[0] and box1_pt2[1] <= box2_pt2[1]:
         # If box 2 contains box 1, return 1
         return 1.0
-    # TODO: Check if box 1 contains box 2. If so, then return 1.
-    # TODO: Same for box 2 contains box 1
 
     common_pt1 = np.max((box1_pt1, box2_pt1), axis=0)
     common_pt2 = np.min((box1_pt2, box2_pt2), axis=0)
@@ -184,4 +182,4 @@ def union(box1: NDArray[(2, 2), np.float64], box2: NDArray[(2, 2), np.float64]):
     box1_area = get_area(box1)
     box2_area = get_area(box2)
     overlap_area = intersection(box1, box2)
-    return box1_area + box2_area - overlap_area
+    return np.abs(box1_area + box2_area - overlap_area)

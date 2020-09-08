@@ -15,63 +15,52 @@ class DefaultNonMaximumSuppression:
         metric: Metric,
         selector: Selector,
         metric_threshold: float,
-        confidence_threshold: float
     ):
         self.metric = metric
         self.selector = selector
         self.metric_threshold = metric_threshold
-        self.confidence_threshold = confidence_threshold
 
     def transform(
         self,
-        bounding_boxes: NDArray[(Any, 2, 2), np.float64],
-        confidences: NDArray[(Any,), np.float64],
+        bounding_boxes: NDArray[(Any, 2, 2), np.float64]
     ):
         bounding_box_ids = np.arange(0, bounding_boxes.shape[0])
-        confidence_filter = confidences > self.confidence_threshold
-        bounding_boxes_filtered = bounding_boxes[confidence_filter]
-        bounding_box_ids_filtered = bounding_box_ids[confidence_filter]
+        bounding_box_ids_cp_iter = itertools.product(bounding_box_ids, bounding_box_ids)
 
-        bounding_boxes_cp_iter = itertools.product(bounding_boxes_filtered, bounding_boxes_filtered)
-        bounding_box_ids_cp_iter = itertools.product(bounding_box_ids_filtered, bounding_box_ids_filtered)
-
-        metrics = []
-
-        for boxes in bounding_boxes_cp_iter:
-            metrics.append(self.metric.compute(*boxes))
-
+        ufs = []
         bounding_box_ids_cp = []
         for bids in bounding_box_ids_cp_iter:
+            ufs.append(self.metric.compute(bounding_boxes[bids[0]], bounding_boxes[bids[1]]) > self.metric_threshold)
             bounding_box_ids_cp.append(bids)
 
-        ufs = [True if m > self.metric_threshold else False for m in metrics]
-        bounding_box_ids_cp_ufs = [box for box, x in zip(bounding_box_ids_cp, ufs) if x]
+        unique_bids = set()
+        unique_ufs_bids = set()
+        bounding_box_ids_cp_ufs = []
+        for bids, flag in zip(bounding_box_ids_cp, ufs):
+            unique_bids.add(bids[0])
+            if flag:
+                unique_ufs_bids.add(bids[0])
+                bounding_box_ids_cp_ufs.append(bids)
 
-        unique_bids = list(set([bids[0] for bids in bounding_box_ids_cp]))
-        unique_ufs_bids = list(set([bids[0] for bids in bounding_box_ids_cp_ufs]))
-
-        selected_bids = []
-        for bid in unique_bids:
-            if bid not in unique_ufs_bids:
-                # This means a box has zero overlaps. So, it automatically gets selected.
-                selected_bids.append(bid)
+        # Boxes here have zero overlaps. So, they are automatically selected
+        selected_bids = list(unique_bids.difference(unique_ufs_bids))
 
         evaluated_bids = set()
         for bid in unique_ufs_bids:
             # Find overlapping boxes
-            complementary_bids = [bids[1] for bids in bounding_box_ids_cp_ufs]
+            complementary_bids = [bids[1] for bids in bounding_box_ids_cp_ufs if bids[0] == bid]
             cbid_ixs_to_remove = []
             for ix, cbid in enumerate(complementary_bids):
-                if (bid, cbid) in evaluated_bids or (cbid, bid) in evaluated_bids or bid == cbid:
+                if cbid in evaluated_bids or bid == cbid:
                     # If we've already seen this combination, then remove it from consideration
                     cbid_ixs_to_remove.append(ix)
-                evaluated_bids.add((bid, cbid))
+                evaluated_bids.add(cbid)
+                evaluated_bids.add(bid)
 
             complementary_bids = [cbid for ix, cbid in enumerate(complementary_bids) if ix not in cbid_ixs_to_remove]
-
             if len(complementary_bids) > 0:
                 selected_bid = self.selector.select(complementary_bids)
                 selected_bids.append(selected_bid)
 
         selected_bids = list(set(selected_bids))
-        return bounding_boxes[selected_bids, :, :], confidences[selected_bids]
+        return selected_bids
