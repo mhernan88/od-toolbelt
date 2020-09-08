@@ -4,15 +4,18 @@ import requests
 import numpy as np
 from pathlib import Path
 from PIL import Image, ImageDraw
+from itertools import product
+import copy
 
 import numpy as np
 from nptyping import NDArray
 from typing import Any, List, Tuple
 
-from nms.suppressors.default import NonMaximumSuppression
-from nms.iou import DefaultNonMaximumSuppression
-from box_selectors.random_selector import RandomSelector, random_selector
-from box_selectors.all_selector import AllSelector
+# from nms.suppressors.default import NonMaximumSuppression
+# from nms.iou import DefaultNonMaximumSuppression
+from suppression.default_non_maximum_suppression import DefaultNonMaximumSuppression
+from metrics.iou import DefaultIntersectionOverTheUnion
+from selection.random_selector import RandomSelector
 
 logger = logging.getLogger("nms_example")
 logger.setLevel(logging.DEBUG)
@@ -56,10 +59,54 @@ def to_list_multi(x: NDArray[(Any, 2, 2), np.float64], shape: Tuple[int, int]) -
 
 
 def draw(boxes: List[List[Tuple[int, int]]], img: Image.Image):
+    print("STARTING DRAW")
     img_draw = ImageDraw.Draw(img)
     for b in boxes:
         img_draw.rectangle(b, outline="red", width=5)
     img.show()
+
+
+def draw_cartesian(boxes: List[List[Tuple[int, int]]], img_raw: Image.Image):
+    boxes_cart = product(boxes, boxes)
+    iou = DefaultIntersectionOverTheUnion()
+    shp = np.asarray(img_raw).shape
+    print(len([b for b in boxes_cart]))
+    boxes_cart = [x for x in product(boxes, boxes)]
+    print(f"LEN BOXES_CART: {len(boxes_cart)}")
+    for i in range(len(boxes_cart)):
+        img = copy.copy(img_raw)
+        img_draw = ImageDraw.Draw(img)
+        print(f"STARTING LOOP ITER {i}")
+        try:
+            box1 = np.expand_dims(to_box(boxes_cart[i][0], shp), 0)
+            box2 = np.expand_dims(to_box(boxes_cart[i][1], shp), 0)
+            this_iou = iou.compute_cube(box1, box2)
+        except Exception as e:
+            print(boxes_cart[0])
+            print(len(boxes_cart[0]))
+            print(i)
+            print("FAILED TO COMPLETE LOOP!!!!!!!!!!!!!!!!!!!!!!!")
+            raise e
+        # if this_iou > 0:
+        if True:
+            print(f"DRAWING LOOP ITER {i}")
+            img_draw.rectangle(boxes_cart[i][0], outline="purple", width=5)
+            img_draw.rectangle(boxes_cart[i][1], outline="purple", width=5)
+            print(f"IOU: {this_iou}")
+            print(f"BOX1: {box1}")
+            print(f"BOX2: {box2}")
+            print(f"ARR1: {boxes_cart[i][0]}")
+            print(f"ARR2: {boxes_cart[i][1]}")
+        if 0 <= this_iou <= 1:
+            img.show()
+            print(f"OK {i+1} of {len(boxes_cart)}")
+        elif 0 <= this_iou:
+            print(f"Skipped {i+1} of {len(boxes_cart)} because it was > 1")
+        # elif this_iou < 1:
+        #     print(f"Skipped {i} of {len(boxes_cart)} because it was <= 0")
+        else:
+            print(f"Skipped {i+1} of {len(boxes_cart)}")
+    print("DONE")
 
 
 def jitter_boxes(boxes, n_boxes, img, std):
@@ -104,20 +151,21 @@ def get_data(n_boxes: int, std: float, show=False):
         draw(boxes, img)
     return boxes_arr, confidences_arr, img, shape
 
+# TODO: MIGRATE TO OPENCV
 
 def apply_nms():
     logger.debug("beginning example")
-    boxes, confs, img, shape = get_data(n_boxes=16, std=0.03, show=False)
+    boxes, confs, img, shape = get_data(n_boxes=5, std=0.03, show=False)
 
     selector = RandomSelector()
+    metric = DefaultIntersectionOverTheUnion()
 
-    # nms = NonMaximumSuppression(iou_threshold=0.3, selection_func=random_selector, logger=logger, confidence_threshold=0.3, selection_kwargs=None, exact=False)
-    # pboxes, pconfs = nms.transform(boxes, confs)
-    nms = DefaultNonMaximumSuppression(iou_threshold=0.15, selection_func=selector, selection_kwargs=dict())
+    nms = DefaultNonMaximumSuppression(metric_threshold=0.1, selector=selector, metric=metric, confidence_threshold=0.5)
     pboxes, pconfs = nms.transform(boxes, confs)
 
+    print(len(pboxes))
     bboxes = to_list_multi(np.asarray(pboxes), shape)
+    # draw_cartesian(bboxes, img)
     draw(bboxes, img)
-
 # get_data(n_boxes=3, std=0.03, show=True)
 apply_nms()
