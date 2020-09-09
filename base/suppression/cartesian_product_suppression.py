@@ -3,7 +3,7 @@ from __future__ import annotations  # type: ignore
 import itertools  # type: ignore
 import numpy as np  # type: ignore
 from nptyping import NDArray  # type: ignore
-from typing import Any, List  # type: ignore
+from typing import Any, List, Tuple  # type: ignore
 
 from metrics.base import Metric  # type: ignore
 from selection.base import Selector  # type: ignore
@@ -32,8 +32,12 @@ class CartesianProductSuppression(Suppressor):
         self.metric_threshold = metric_threshold
 
     def transform(
-        self, bounding_boxes: NDArray[(Any, 2, 2), np.float64], *args, **kwargs
-    ) -> List[int]:
+        self,
+        bounding_boxes: NDArray[(Any, 2, 2), np.float64],
+        confidences: NDArray[(Any,), np.float64],
+        *args,
+        **kwargs
+    ) -> Tuple[NDArray[(Any, 2, 2), np.float64], NDArray[(Any,), np.float64]]:
         """See base class documentation.
         """
         bounding_box_ids = np.arange(0, bounding_boxes.shape[0])
@@ -68,21 +72,29 @@ class CartesianProductSuppression(Suppressor):
         no_overlap_boxes = np.argwhere(no_overlap)
         selected_bids.extend(no_overlap_boxes.ravel().tolist())
 
-        return selected_bids
+        return bounding_boxes[selected_bids, :, :], confidences[selected_bids]
 
     def burst(
-        self, bounding_box_burst: NDArray[(Any, Any, 2, 2), np.float64], *args, **kwargs
-    ) -> List[int]:
+        self,
+        bounding_box_burst: List[NDArray[(Any, 2, 2), np.float64]],
+        confidences_burst: List[NDArray[(Any,), np.float64]],
+        *args,
+        **kwargs
+    ) -> Tuple[NDArray[(Any, 2, 2), np.float64], NDArray[(Any,), np.float64]]:
         """See base class documentation.
         """
-        pass
+        bounding_box = np.concatenate(bounding_box_burst, axis=0)
+        confidences = np.concatenate(confidences_burst, axis=0)
+        indexes = self.transform(bounding_box, confidences)
+        return bounding_box[indexes, :, :], confidences[indexes]
 
     def batch(
         self,
-        bounding_box_batch: NDArray[(Any, Any, Any, 2, 2), np.float64],
+        bounding_box_batch: List[List[NDArray[(Any, 2, 2), np.float64]]],
+        confidences_batch: List[List[NDArray[(Any,), np.float64]]],
         *args,
         **kwargs
-    ) -> List[List[int]]:
+    ) -> List[Tuple[NDArray[(Any, 2, 2), np.float64], NDArray[(Any,), np.float64]]]:
         """See base class documentation.
         """
-        pass
+        return [self.burst(bounding_box_burst, confidences_burst) for bounding_box_burst, confidences_burst in zip(bounding_box_batch, confidences_batch)]

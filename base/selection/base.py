@@ -5,6 +5,7 @@ class Selector:
     """
     A selector is how one of multiple overlapping images is selected.
     """
+
     def __init__(self, *args, **kwargs):
         """Any configuration variables can be passed and stored here.
         """
