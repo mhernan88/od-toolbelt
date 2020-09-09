@@ -2,8 +2,8 @@ from setuptools import setup  # type: ignore
 
 setup(
     name="odToolbox",
-    version="0.0.1",
-    packages=["nms", "nms.suppressors", "geometry", "selection",],
+    version="0.0.2",
+    packages=["geometry", "selection", "metrics", "suppression"],
     url="",
     license="",
     author="Michael Hernandez",

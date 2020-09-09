@@ -12,7 +12,7 @@ from typing import Any, List, Tuple
 
 # from nms.suppressors.default import NonMaximumSuppression
 # from nms.iou import DefaultNonMaximumSuppression
-from suppression.default_non_maximum_suppression import DefaultNonMaximumSuppression
+from suppression.cartesian_product_suppression import DefaultNonMaximumSuppression
 from metrics.iou import DefaultIntersectionOverTheUnion
 from selection.random_selector import RandomSelector
 
@@ -109,10 +109,10 @@ def draw_cartesian(boxes: List[List[Tuple[int, int]]], img_raw: Image.Image):
     print("DONE")
 
 
-def jitter_boxes(boxes, n_boxes, img, std):
+def jitter_boxes(this_boxes, n_boxes, img, std):
     new_boxes = []
     for i in range(n_boxes):
-        for j, this_box in enumerate(boxes):
+        for j, this_box in enumerate(this_boxes[:len(this_boxes)-1]):
             print(f"Adding new box {i} around existing box {j}")
             new_box_pt1_x = this_box[0][0] + np.random.normal(loc=0, scale=std * np.asarray(img).shape[0])
             new_box_pt1_y = this_box[0][1] + np.random.normal(loc=0, scale=std * np.asarray(img).shape[1])
@@ -120,8 +120,8 @@ def jitter_boxes(boxes, n_boxes, img, std):
             new_box_pt2_y = this_box[1][1] + np.random.normal(loc=0, scale=std * np.asarray(img).shape[1])
             new_box = [(new_box_pt1_x, new_box_pt1_y), (new_box_pt2_x, new_box_pt2_y)]
             new_boxes.append(new_box)
-    boxes.extend(new_boxes)
-    return new_boxes
+    this_boxes.extend(new_boxes)
+    return this_boxes
 
 
 def get_data(n_boxes: int, std: float, show=False):
@@ -144,8 +144,14 @@ def get_data(n_boxes: int, std: float, show=False):
         [(1950, 2100), (2950, 2925)]
     ]
 
+    print(f"ORIG LEN BOXES = {len(boxes)}")
     new_boxes = jitter_boxes(boxes, n_boxes, img, std)
     boxes_arr, confidences_arr = to_box_multi(new_boxes, shape)
+
+    # TODO: Number of boxes decreases during to_box_multi. Fix this
+    print(f"LEN BOXES = {len(boxes)}")
+    print(f"LEN NEW_BOXES = {len(new_boxes)}")
+    print(f"LEN BOXES ARR = {boxes_arr.shape}")
 
     if show:
         draw(boxes, img)
@@ -153,19 +159,26 @@ def get_data(n_boxes: int, std: float, show=False):
 
 # TODO: MIGRATE TO OPENCV
 
+
 def apply_nms():
     logger.debug("beginning example")
-    boxes, confs, img, shape = get_data(n_boxes=15, std=0.03, show=False)
+    boxes, confs, img, shape = get_data(n_boxes=3, std=0.03, show=False)
+    print(f"STARTING WITH {len(boxes)} boxes")
+    # draw(to_list_multi(boxes, np.asarray(img)[:, :, 0].shape), img)
 
     selector = RandomSelector()
     metric = DefaultIntersectionOverTheUnion()
 
     nms = DefaultNonMaximumSuppression(metric_threshold=0.1, selector=selector, metric=metric)
     # pboxes, pconfs = nms.transform(boxes, confs)
-    boxes = boxes[confs > 0.5, :, :]
+    # boxes = boxes[confs > 0.5, :, :]
     ixs = nms.transform(boxes)
 
-    pboxes = boxes[ixs, :, :]
+    try:
+        pboxes = boxes[ixs, :, :]
+    except Exception as e:
+        print(ixs)
+        raise e
 
 
     print(len(pboxes))

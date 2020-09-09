@@ -153,21 +153,38 @@ def intersection_ok(
     return True
 
 
-def intersection(box1: NDArray[(2, 2), np.float64], box2: NDArray[(2, 2), np.float64]) -> float:
+def intersection(
+    box1: NDArray[(2, 2), np.float64], box2: NDArray[(2, 2), np.float64]
+) -> float:
     box1_pt1 = get_point1(box1)
     box1_pt2 = get_point2(box1)
     box2_pt1 = get_point1(box2)
     box2_pt2 = get_point2(box2)
 
-    if box2_pt1[0] >= box1_pt2[0] or box1_pt1[0] >= box2_pt2[0] or box2_pt1[1] >= box1_pt2[1] or box1_pt1[1] >= box2_pt2[1]:
+    if (
+        box2_pt1[0] >= box1_pt2[0]
+        or box1_pt1[0] >= box2_pt2[0]
+        or box2_pt1[1] >= box1_pt2[1]
+        or box1_pt1[1] >= box2_pt2[1]
+    ):
         # if boxes don't overlap, then 0 intersection.
         return 0.0
 
-    if box2_pt1[0] >= box1_pt1[0] and box2_pt1[1] >= box1_pt1[1] and box2_pt2[0] <= box1_pt2[0] and box2_pt2[1] <= box1_pt2[1]:
+    if (
+        box2_pt1[0] >= box1_pt1[0]
+        and box2_pt1[1] >= box1_pt1[1]
+        and box2_pt2[0] <= box1_pt2[0]
+        and box2_pt2[1] <= box1_pt2[1]
+    ):
         # If box 1 contains box 2, return 1
         return 1.0
 
-    if box1_pt1[0] >= box2_pt1[0] and box1_pt1[1] >= box2_pt1[1] and box1_pt2[0] <= box2_pt2[0] and box1_pt2[1] <= box2_pt2[1]:
+    if (
+        box1_pt1[0] >= box2_pt1[0]
+        and box1_pt1[1] >= box2_pt1[1]
+        and box1_pt2[0] <= box2_pt2[0]
+        and box1_pt2[1] <= box2_pt2[1]
+    ):
         # If box 2 contains box 1, return 1
         return 1.0
 

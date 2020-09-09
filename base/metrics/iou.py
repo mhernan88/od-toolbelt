@@ -3,9 +3,7 @@ import numpy as np
 from nptyping import NDArray
 from typing import Any
 
-# from geometry.cube import intersection, union
-from geometry import cube
-from geometry.box import intersection, union
+from geometry import cube, box
 from metrics.base import Metric
 
 
@@ -14,22 +12,44 @@ class DefaultIntersectionOverTheUnion(Metric):
     A default intersection over the union measure. This takes the intersection of two boxes (the "overlap") and divides
     it by the "union" of those two boxes (the total area covered by those two boxes combined).
     """
+
     def __init__(self):
-        """Empty init method. No additional args, kwargs to pass here.
-        """
         super().__init__()
 
-    def compute(self, cube1: NDArray[(2, 2), np.float64], cube2: NDArray[(2, 2), np.float64]):
+    def compute(
+        self,
+        bounding_box1: NDArray[(2, 2), np.float64],
+        bounding_box2: NDArray[(2, 2), np.float64],
+    ) -> float:
         """Method to compute intersection over the union.
 
         Args:
-            cube1: An array of boxes to be evaluated.
-            cube2: An array of boxes to be evaluated against cube1.
+            bounding_box1: An bounding box to be evaluated.
+            bounding_box2: An bounding box to be evaluated against bounding_box1.
 
         Returns:
-            An array of intersection of the union measures.
+            The intersection over the union measure.
         """
-        return np.divide(intersection(cube1, cube2), union(cube1, cube2))
+        return np.divide(
+            box.intersection(bounding_box1, bounding_box2),
+            box.union(bounding_box1, bounding_box2),
+        )
 
-    def compute_cube(self, cube1, cube2):
-        return np.divide(cube.intersection(cube1, cube2), cube.union(cube1, cube2))
+    def compute_many(
+        self,
+        bounding_boxes1: NDArray[(Any, 2, 2), np.float64],
+        bounding_boxes2: NDArray[(Any, 2, 2), np.float64],
+    ) -> NDArray[(Any,), np.float64]:
+        """
+
+        Args:
+            bounding_boxes1: The first array of bounding boxes to compare.
+            bounding_boxes2: The second array of bounding boxes to compare.
+
+        Returns:
+            An array of intersection over the union measures.
+        """
+        return np.divide(
+            cube.intersection(bounding_boxes1, bounding_boxes2),
+            cube.union(bounding_boxes1, bounding_boxes2),
+        )

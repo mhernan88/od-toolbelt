@@ -15,12 +15,13 @@ and returns enhanced and filtered predictions. Think of it as a post-processing 
 detection workflow to boost performance.
 
 Modules:
-- Multi-image non-maximum suppression: This module applies the well known non-maximum suppression on a series of images as
+- Multi-image suppression: This module applies the well known non-maximum suppression on a series of images as
 opposed to an individual image. This yields a higher overall precision than what could be achieved with a single photo.
-- More to be added with additional enhancements.
+- Selectors: A modular way to create selection logic for image suppression. See selection/README.md for more information.
+- Metrics: A modular way to create measures of bounding box overlap. See metrics/README.md for more information.
 
 ---
-## Multi-Image Non-maximum Suppression:
+## Multi-Image Suppression:
 As object detection models become more commonplace in industry, the challenges of applying a digital model in the
 physical world become more present.
 
@@ -28,10 +29,10 @@ One such challenge is inconsistency of the performance of object detection algor
 position, lighting, and other factors. This can lead to several photographs of the same exact object from the same
 perspective yielding different predictions.
 
-Multi-image non-maximum suppression takes a "burst" of image predictions, and processes those as a group, yielding a
+Multi-image suppression takes a "burst" of image predictions, and processes those as a group, yielding a
 higher (or, at minimum, equal) precision than any individual photo.
 
-One other enhancement this module applies is modularizing the selection methodology of the non-maximum suppression
+One other enhancement this module applies is modularizing the selection methodology of the suppression
 algorithm. This allows developers to pick their own methodology for selecting between overlapping bounding boxes.
 See the "selectors" package module.
 
