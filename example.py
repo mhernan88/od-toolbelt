@@ -1,20 +1,18 @@
-import logging
-import rootpath
-import requests
-from pathlib import Path
-from PIL import Image, ImageDraw
-from itertools import product
 import copy
-
-import numpy as np
-from nptyping import NDArray
+import logging
+from itertools import product
+from pathlib import Path
 from typing import Any, List, Tuple
 
+import numpy as np
+import requests
+from PIL import Image, ImageDraw
+from metrics.iou import DefaultIntersectionOverTheUnion
+from nptyping import NDArray
+from selection.random_selector import RandomSelector
 # from nms.suppressors.default import NonMaximumSuppression
 # from nms.iou import DefaultNonMaximumSuppression
-from suppression.cartesian_product_suppression import DefaultNonMaximumSuppression
-from metrics.iou import DefaultIntersectionOverTheUnion
-from selection.random_selector import RandomSelector
+from suppression.sector_suppression import SectorSuppression
 
 logger = logging.getLogger("nms_example")
 logger.setLevel(logging.DEBUG)
@@ -169,19 +167,13 @@ def apply_nms():
     selector = RandomSelector()
     metric = DefaultIntersectionOverTheUnion()
 
-    nms = DefaultNonMaximumSuppression(metric_threshold=0.1, selector=selector, metric=metric)
+    # nms = CartesianProductSuppression(metric_threshold=0.1, selector=selector, metric=metric)
+    nms = SectorSuppression(metric=metric, selector=selector, metric_threshold=0.1, sector_divisions=1)
+
     # pboxes, pconfs = nms.transform(boxes, confs)
     # boxes = boxes[confs > 0.5, :, :]
-    ixs = nms.transform(boxes)
+    pboxes, pconfs = nms.transform(boxes, confs)
 
-    try:
-        pboxes = boxes[ixs, :, :]
-    except Exception as e:
-        print(ixs)
-        raise e
-
-
-    print(len(pboxes))
     bboxes = to_list_multi(np.asarray(pboxes), shape)
     # draw_cartesian(bboxes, img)
     draw(bboxes, img)

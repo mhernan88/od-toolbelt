@@ -1,11 +1,11 @@
 from __future__ import annotations  # type: ignore
 
 import itertools  # type: ignore
-import numpy as np  # type: ignore
-from nptyping import NDArray  # type: ignore
-from typing import Any, List, Tuple  # type: ignore
+from typing import Any, List, Tuple, Iterator, Set  # type: ignore
 
+import numpy as np  # type: ignore
 from metrics.base import Metric  # type: ignore
+from nptyping import NDArray  # type: ignore
 from selection.base import Selector  # type: ignore
 from suppression.base import Suppressor  # type: ignore
 
@@ -24,7 +24,7 @@ class CartesianProductSuppression(Suppressor):
             metric: An instance of a "Metric" (see metrics.base.Base for documentation).
             selector: An instance of a "Selector" (see selection.base.Base for documentation).
             metric_threshold: The value a given metric value needs to exceed in order to be considered overlapping
-            another bounding box.
+                another bounding box.
         """
         super().__init__()
         self.metric = metric
@@ -38,18 +38,30 @@ class CartesianProductSuppression(Suppressor):
         *args,
         **kwargs
     ) -> Tuple[NDArray[(Any, 2, 2), np.float64], NDArray[(Any,), np.float64]]:
-        """See base class documentation.
+        """A wrapper for cp_transform.
         """
-        bounding_box_ids = np.arange(0, bounding_boxes.shape[0])
-        bounding_box_ids_cp = itertools.product(bounding_box_ids, bounding_box_ids)
+        return self._cp_transform(bounding_boxes, confidences, *args, **kwargs)
+
+    def _evaluate_overlap(
+        self,
+        bounding_boxes: NDArray[(Any, 2, 2), np.float64],
+        bounding_box_ids: Iterator[Tuple[Any, Any]],  # Replace with nested loop instead of CP
+        symmetric: bool = False,
+    ) -> Tuple[List[int], Set[int]]:
+        bounding_box_ids = [x for x in bounding_box_ids]  # TEMP
+        boundary_boudning_box_idsx = set([b[0] for b in bounding_box_ids])  # TEMP
+        all_boudning_box_idsx = set([b[1] for b in bounding_box_ids])  # TEMP
+        non_boundary_bounding_box_ids = all_boudning_box_idsx.difference(boundary_boudning_box_idsx)
 
         selected_bids = []
         complementary_bids = []
         evaluated_bids = set()
-        no_overlap = np.full(bounding_box_ids.shape[0], True, dtype=np.bool)
+        no_overlap = np.full(bounding_boxes.shape[0], True, dtype=np.bool)
         last_bid = -1
 
-        for bids in bounding_box_ids_cp:
+        empty = True
+        for bids in bounding_box_ids:
+            empty = False
             metric = self.metric.compute(
                 bounding_boxes[bids[0]], bounding_boxes[bids[1]]
             )
@@ -68,10 +80,31 @@ class CartesianProductSuppression(Suppressor):
                 no_overlap[bids[0]] = False
                 no_overlap[bids[1]] = False
             last_bid = bids[0]
+        if not symmetric and len(non_boundary_bounding_box_ids) > 0:
+            no_overlap[list(non_boundary_bounding_box_ids)] = False
 
-        no_overlap_boxes = np.argwhere(no_overlap)
-        selected_bids.extend(no_overlap_boxes.ravel().tolist())
+        if not empty:
+            no_overlap_boxes = np.argwhere(no_overlap).ravel().tolist()
+            selected_bids.extend(no_overlap_boxes)
+            evaluated_bids.update(selected_bids)
 
+        return selected_bids, evaluated_bids
+
+    def _cp_transform(
+        self,
+        bounding_boxes: NDArray[(Any, 2, 2), np.float64],
+        confidences: NDArray[(Any,), np.float64],
+        *args,
+        **kwargs
+    ) -> Tuple[NDArray[(Any, 2, 2), np.float64], NDArray[(Any,), np.float64]]:
+        """See base class documentation for transform().
+
+        This method is intended to be called by a wrapper or inherited.
+        """
+        bounding_box_ids = np.arange(0, bounding_boxes.shape[0])
+        bounding_box_ids_cp = itertools.product(bounding_box_ids, bounding_box_ids)
+
+        selected_bids, _ = self._evaluate_overlap(bounding_boxes, bounding_box_ids_cp)
         return bounding_boxes[selected_bids, :, :], confidences[selected_bids]
 
     def burst(
@@ -97,4 +130,9 @@ class CartesianProductSuppression(Suppressor):
     ) -> List[Tuple[NDArray[(Any, 2, 2), np.float64], NDArray[(Any,), np.float64]]]:
         """See base class documentation.
         """
-        return [self.burst(bounding_box_burst, confidences_burst) for bounding_box_burst, confidences_burst in zip(bounding_box_batch, confidences_batch)]
+        return [
+            self.burst(bounding_box_burst, confidences_burst)
+            for bounding_box_burst, confidences_burst in zip(
+                bounding_box_batch, confidences_batch
+            )
+        ]

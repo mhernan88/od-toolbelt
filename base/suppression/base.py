@@ -1,6 +1,7 @@
+from typing import Any, Tuple, List  # type: ignore
+
 import numpy as np  # type: ignore
 from nptyping import NDArray  # type: ignore
-from typing import Any, Tuple, List  # type: ignore
 
 
 class Suppressor:
@@ -77,10 +78,3 @@ class Suppressor:
             A list of confidence outputs from the burst() method.
         """
         raise NotImplementedError
-
-
-
-
-
-
-
