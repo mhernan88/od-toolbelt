@@ -3,7 +3,7 @@ from __future__ import annotations  # type: ignore
 import itertools  # type: ignore
 import numpy as np  # type: ignore
 from nptyping import NDArray  # type: ignore
-from typing import Any, Tuple, List  # type: ignore
+from typing import Any, Tuple, List, Union  # type: ignore
 
 from od_toolbelt.nms.metrics.base import Metric  # type: ignore
 from od_toolbelt.nms.selection.base import Selector  # type: ignore
@@ -15,10 +15,9 @@ class SectorSuppression(CartesianProductSuppression):
         self,
         metric: Metric,
         selector: Selector,
-        metric_threshold: float,
         sector_divisions: int,
     ):
-        super().__init__(metric, selector, metric_threshold)
+        super().__init__(metric, selector)
         assert sector_divisions > 0
         self.sector_divisions = sector_divisions
         self.image_shape = (1, 1)
@@ -71,11 +70,17 @@ class SectorSuppression(CartesianProductSuppression):
         return sectors, dividing_lines
 
     def _handle_boundaries(
-        self,
-        bounding_boxes: NDArray[(Any, 2, 2), np.float64],
-        confidences: NDArray[(Any,), np.float64],
-        dividing_lines: List[Tuple[int, bool]],
-    ) -> Tuple[List[int], NDArray[(Any, 2, 2), np.int64], NDArray[(Any,), np.float64]]:
+            self,
+            bounding_boxes: NDArray[(Any, 2, 2), np.float64],
+            confidences: NDArray[(Any,), np.float64],
+            labels: NDArray[(Any,), np.int64],
+            dividing_lines: List[Tuple[int, bool]],
+    ) -> Tuple[
+        List[int],
+        NDArray[(Any, 2, 2), np.int64],
+        NDArray[(Any,), np.float64],
+        NDArray[(Any,), np.int64],
+    ]:
         """Finds all boxes overlapping boundaries. Performs selection on those boxes and any overlapping boxes.
 
         Args:
@@ -115,6 +120,7 @@ class SectorSuppression(CartesianProductSuppression):
             selected_bids,
             bounding_boxes[evaluated_bids_inv, :, :],
             confidences[evaluated_bids_inv],
+            labels[evaluated_bids_inv],
         )
 
     @staticmethod
@@ -175,11 +181,16 @@ class SectorSuppression(CartesianProductSuppression):
 
     def transform(
         self,
-        bounding_boxes: NDArray[(Any, 2, 2), np.float64],
-        confidences: NDArray[(Any,), np.float64],
-        *args,
-        **kwargs
-    ) -> Tuple[NDArray[(Any, 2, 2), np.float64], NDArray[(Any,), np.float64]]:
+            bounding_boxes: NDArray[(Any, 2, 2), np.float64],
+            confidences: NDArray[(Any,), np.float64],
+            labels: NDArray[(Any,), np.int64],
+            *args,
+            **kwargs
+    ) -> Tuple[
+        NDArray[(Any, 2, 2), np.float64],
+        NDArray[(Any,), np.float64],
+        NDArray[(Any,), np.int64],
+    ]:
         """See base class documentation."""
         image_sector = [
             np.array(((0, 0), self.image_shape), dtype=np.int64),
@@ -189,22 +200,29 @@ class SectorSuppression(CartesianProductSuppression):
             selected_bids,
             filtered_bounding_boxes,
             filtered_confidences,
-        ) = self._handle_boundaries(bounding_boxes, confidences, dividing_lines)
+            filtered_labels,
+        ) = self._handle_boundaries(bounding_boxes, confidences, labels, dividing_lines)
 
         selected_bounding_boxes = [bounding_boxes[selected_bids, :, :]]
         selected_confidences = [confidences[selected_bids]]
+        selected_labels = [labels[selected_bids]]
         all_sector_bids = self._assign_sectors(filtered_bounding_boxes, sectors)
         for sector_bids in all_sector_bids:
             (
                 this_selected_bounding_boxes,
                 this_selected_confidences,
+                this_selected_labels,
             ) = self._cp_transform(
                 filtered_bounding_boxes[sector_bids, :, :],
                 filtered_confidences[sector_bids],
+                filtered_labels[sector_bids],
+                np.asarray(sector_bids, dtype=np.int64),
             )
             selected_bounding_boxes.append(this_selected_bounding_boxes)
             selected_confidences.append(this_selected_confidences)
+            selected_labels.append(this_selected_labels)
         return (
             np.concatenate(selected_bounding_boxes, axis=0),
             np.concatenate(selected_confidences, axis=0),
+            np.concatenate(selected_labels, axis=0)
         )
