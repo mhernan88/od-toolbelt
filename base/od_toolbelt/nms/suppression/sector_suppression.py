@@ -8,6 +8,7 @@ from typing import Any, Tuple, List, Union  # type: ignore
 from od_toolbelt.nms.metrics.base import Metric  # type: ignore
 from od_toolbelt.nms.selection.base import Selector  # type: ignore
 from od_toolbelt.nms.suppression.cartesian_product_suppression import CartesianProductSuppression  # type: ignore
+from od_toolbelt import BoundingBoxArray
 
 
 class SectorSuppression(CartesianProductSuppression):
@@ -181,9 +182,7 @@ class SectorSuppression(CartesianProductSuppression):
 
     def transform(
         self,
-            bounding_boxes: NDArray[(Any, 2, 2), np.float64],
-            confidences: NDArray[(Any,), np.float64],
-            labels: NDArray[(Any,), np.int64],
+            bounding_box_array: BoundingBoxArray,
             *args,
             **kwargs
     ) -> Tuple[
@@ -201,11 +200,16 @@ class SectorSuppression(CartesianProductSuppression):
             filtered_bounding_boxes,
             filtered_confidences,
             filtered_labels,
-        ) = self._handle_boundaries(bounding_boxes, confidences, labels, dividing_lines)
+        ) = self._handle_boundaries(
+            bounding_box_array.bounding_boxes,
+            bounding_box_array.confidences,
+            bounding_box_array.labels,
+            dividing_lines
+        )
 
-        selected_bounding_boxes = [bounding_boxes[selected_bids, :, :]]
-        selected_confidences = [confidences[selected_bids]]
-        selected_labels = [labels[selected_bids]]
+        selected_bounding_boxes = [bounding_box_array.bounding_boxes[selected_bids, :, :]]
+        selected_confidences = [bounding_box_array.confidences[selected_bids]]
+        selected_labels = [bounding_box_array.labels[selected_bids]]
         all_sector_bids = self._assign_sectors(filtered_bounding_boxes, sectors)
         for sector_bids in all_sector_bids:
             (

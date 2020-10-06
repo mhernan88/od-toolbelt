@@ -27,24 +27,26 @@ class CartesianProductSuppression(Suppressor):
             metric: An instance of a "Metric" (see metrics.base.Base for documentation).
             selector: An instance of a "Selector" (see selection.base.Base for documentation).
         """
-        super().__init__()
-        self.metric = metric
-        self.selector = selector
+        super().__init__(metric, selector)
 
     def transform(
-        self,
-        bounding_boxes: NDArray[(Any, 2, 2), np.float64],
-        confidences: NDArray[(Any,), np.float64],
-        labels: Union[NDArray[(Any,), np.int64], List[Union[str, int]]],
-        *args,
-        **kwargs
+            self,
+            bounding_box_array: BoundingBoxArray,
+            *args,
+            **kwargs
     ) -> Tuple[
         NDArray[(Any, 2, 2), np.float64],
         NDArray[(Any,), np.float64],
         NDArray[(Any,), np.int64],
     ]:
         """A wrapper for cp_transform."""
-        return self._cp_transform(bounding_boxes, confidences, labels, *args, **kwargs)
+        return self._cp_transform(
+            bounding_box_array.bounding_boxes,
+            bounding_box_array.confidences,
+            bounding_box_array.labels,
+            *args,
+            **kwargs
+        )
 
     def _evaluate_overlap(
         self,

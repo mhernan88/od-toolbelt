@@ -1,7 +1,12 @@
+from __future__ import annotations
+
 from typing import Any, Tuple, List  # type: ignore
 
 import numpy as np  # type: ignore
 from nptyping import NDArray  # type: ignore
+from od_toolbelt.nms.selection import Selector  # type: ignore
+from od_toolbelt.nms.metrics import Metric  # type: ignore
+from od_toolbelt import BoundingBoxArray  # type: ignore
 
 
 class Suppressor:
@@ -9,16 +14,19 @@ class Suppressor:
     A base suppressor class to serve as a specification for other suppressor classes.
     """
 
-    def __init__(self):
-        pass
+    def __init__(
+            self,
+            metric: Metric,
+            selector: Selector,
+    ):
+        self.metric = metric
+        self.selector = selector
 
     def transform(
-        self,
-        bounding_boxes: NDArray[(Any, 2, 2), np.float64],
-        confidences: NDArray[(Any,), np.float64],
-        labels: NDArray[(Any,), np.int64],
-        *args,
-        **kwargs
+            self,
+            bounding_box_array: BoundingBoxArray,
+            *args,
+            **kwargs,
     ) -> Tuple[
         NDArray[(Any, 2, 2), np.float64],
         NDArray[(Any,), np.float64],
