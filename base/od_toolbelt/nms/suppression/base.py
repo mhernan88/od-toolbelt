@@ -16,9 +16,14 @@ class Suppressor:
         self,
         bounding_boxes: NDArray[(Any, 2, 2), np.float64],
         confidences: NDArray[(Any,), np.float64],
+        labels: NDArray[(Any,), np.int64],
         *args,
         **kwargs
-    ) -> Tuple[NDArray[(Any, 2, 2), np.float64], NDArray[(Any,), np.float64]]:
+    ) -> Tuple[
+        NDArray[(Any, 2, 2), np.float64],
+        NDArray[(Any,), np.float64],
+        NDArray[(Any,), np.int64],
+    ]:
         """A method that filters down the amount of bounding boxes of an image
 
         Args:
@@ -38,9 +43,14 @@ class Suppressor:
         self,
         bounding_box_burst: List[NDArray[(Any, 2, 2), np.float64]],
         confidences_burst: List[NDArray[(Any,), np.float64]],
+        labels_burst: List[NDArray[(Any,), np.int64]],
         *args,
         **kwargs
-    ) -> Tuple[NDArray[(Any, 2, 2), np.float64], NDArray[(Any,), np.float64]]:
+    ) -> Tuple[
+        NDArray[(Any, 2, 2), np.float64],
+        NDArray[(Any,), np.float64],
+        NDArray[(Any,), np.int64],
+    ]:
         """A method to run transform() on a burst of images.
 
         All images in the burst should be take of the same subject from the same angle.
@@ -60,11 +70,16 @@ class Suppressor:
 
     def batch(
         self,
-        bounding_box_batch: NDArray[(Any, Any, Any, 2, 2), np.float64],
-        confidences_batch: NDArray[(Any, Any, Any), np.float64],
+        bounding_box_batch: List[List[NDArray[(Any, 2, 2), np.float64]]],
+        confidences_batch: List[List[NDArray[(Any,), np.float64]]],
+        labels_batch: List[List[NDArray[(Any,), np.int64]]],
         *args,
         **kwargs
-    ) -> Tuple[NDArray[(Any, Any, 2, 2), np.float64], NDArray[(Any, Any), np.float64]]:
+    ) -> Tuple[
+        List[NDArray[(Any, 2, 2), np.float64]],
+        List[NDArray[(Any,), np.float64]],
+        List[NDArray[(Any,), np.int64]],
+    ]:
         """A method to run burst() on a batch of different images.
 
         Args:

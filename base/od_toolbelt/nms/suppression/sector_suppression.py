@@ -1,13 +1,13 @@
 from __future__ import annotations  # type: ignore
 
 import itertools  # type: ignore
+import numpy as np  # type: ignore
+from nptyping import NDArray  # type: ignore
 from typing import Any, Tuple, List  # type: ignore
 
-import numpy as np  # type: ignore
-from metrics.base import Metric  # type: ignore
-from nptyping import NDArray  # type: ignore
-from selection.base import Selector  # type: ignore
-from suppression.cartesian_product_suppression import CartesianProductSuppression  # type: ignore
+from od_toolbelt.nms.metrics.base import Metric  # type: ignore
+from od_toolbelt.nms.selection.base import Selector  # type: ignore
+from od_toolbelt.nms.suppression.cartesian_product_suppression import CartesianProductSuppression  # type: ignore
 
 
 class SectorSuppression(CartesianProductSuppression):
@@ -180,8 +180,7 @@ class SectorSuppression(CartesianProductSuppression):
         *args,
         **kwargs
     ) -> Tuple[NDArray[(Any, 2, 2), np.float64], NDArray[(Any,), np.float64]]:
-        """See base class documentation.
-        """
+        """See base class documentation."""
         image_sector = [
             np.array(((0, 0), self.image_shape), dtype=np.int64),
         ]
@@ -200,7 +199,8 @@ class SectorSuppression(CartesianProductSuppression):
                 this_selected_bounding_boxes,
                 this_selected_confidences,
             ) = self._cp_transform(
-                filtered_bounding_boxes[sector_bids, :, :], filtered_confidences[sector_bids]
+                filtered_bounding_boxes[sector_bids, :, :],
+                filtered_confidences[sector_bids],
             )
             selected_bounding_boxes.append(this_selected_bounding_boxes)
             selected_confidences.append(this_selected_confidences)

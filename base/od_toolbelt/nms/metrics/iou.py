@@ -4,7 +4,7 @@ from nptyping import NDArray
 from typing import Any
 
 from geometry import cube, box
-from metrics.base import Metric
+from od_toolbelt.nms.metrics.base import Metric
 
 
 class DefaultIntersectionOverTheUnion(Metric):
@@ -13,13 +13,13 @@ class DefaultIntersectionOverTheUnion(Metric):
     it by the "union" of those two boxes (the total area covered by those two boxes combined).
     """
 
-    def __init__(self):
-        super().__init__()
+    def __init__(self, threshold: float, direction: str):
+        super().__init__(threshold, direction)
 
     def compute(
-        self,
-        bounding_box1: NDArray[(2, 2), np.float64],
-        bounding_box2: NDArray[(2, 2), np.float64],
+            self,
+            bounding_box1: NDArray[(2, 2), np.float64],
+            bounding_box2: NDArray[(2, 2), np.float64],
     ) -> float:
         """Method to compute intersection over the union.
 
@@ -36,9 +36,9 @@ class DefaultIntersectionOverTheUnion(Metric):
         )
 
     def compute_many(
-        self,
-        bounding_boxes1: NDArray[(Any, 2, 2), np.float64],
-        bounding_boxes2: NDArray[(Any, 2, 2), np.float64],
+            self,
+            bounding_boxes1: NDArray[(Any, 2, 2), np.float64],
+            bounding_boxes2: NDArray[(Any, 2, 2), np.float64],
     ) -> NDArray[(Any,), np.float64]:
         """
 
