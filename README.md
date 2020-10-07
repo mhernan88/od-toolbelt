@@ -47,8 +47,7 @@ with only one bounding box per object.
 ![From False Positives to Only Detections](https://od-toolbox.s3.amazonaws.com/images/from_false_positives_to_filtered.JPG)  
 *[Feb 19, 2015 - morning sunrise, 02](https://www.flickr.com/photos/72098626@N00/16043767804) by [Ed Yourdon](https://www.flickr.com/photos/72098626@N00) is licensed under [CC BY-NC-SA 2.0](https://creativecommons.org/licenses/by-nc-sa/2.0/?ref=ccsearch&atype=rich)*
 
-#### Sector-Based Non-Maximum Suppression Explanation
-\[Currently Implemented]
+#### Sector-Based Non-Maximum Suppression Explanation \[Currently Implemented]
 Although non-maximum suppression (NMS) does significantly reduce the number of bounding boxes and typically provides a 
 satisfactory result, it is an expensive algorithm. Greedy NMS compares each bounding box against
 every other bounding box in the image. In our example, we have 22 predictions (8 correct predictions and 14 false positives). 
@@ -105,8 +104,7 @@ Next, we iterate over each sector and perform Greedy NMS on the bounding boxes i
 of each iteration of Greedy NMS to our existing set of selected boxes. At the end of the entire process, we end up with
 a full set of selected bounding boxes.
 
-#### Consensus-Based Non-Maximum Suppression Selection Explanation
-\[On Roadmap]
+#### Consensus-Based Non-Maximum Suppression Selection Explanation \[On Roadmap]
 
 Typcially, Non-Maximum Suppression is run on a single image. When performing object detection on images, many camera factors, like lighting, focus, contrast, play a role in the number of correct detections an object detection model is able to make. Even subtle changes, which can be imperceptible to the human eye, can have an effect on a model's performance, and can lead to decreases in model precision and recall.
 
