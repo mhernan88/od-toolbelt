@@ -30,6 +30,8 @@ class DefaultIntersectionOverTheUnion(Metric):
         Returns:
             The intersection over the union measure.
         """
+        assert len(bounding_box1.shape) == 2
+        assert len(bounding_box2.shape) == 2
         return np.divide(
             box.intersection(bounding_box1, bounding_box2),
             box.union(bounding_box1, bounding_box2),
@@ -49,6 +51,8 @@ class DefaultIntersectionOverTheUnion(Metric):
         Returns:
             An array of intersection over the union measures.
         """
+        assert len(bounding_boxes1.shape) == 3
+        assert len(bounding_boxes2.shape) == 3
         return np.divide(
             cube.intersection(bounding_boxes1, bounding_boxes2),
             cube.union(bounding_boxes1, bounding_boxes2),

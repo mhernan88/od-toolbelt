@@ -1,18 +1,17 @@
 import copy
 import logging
-from itertools import product
+import requests
+import numpy as np
 from pathlib import Path
+from nptyping import NDArray
+from itertools import product
+from PIL import Image, ImageDraw
 from typing import Any, List, Tuple
 
-import numpy as np
-import requests
-from PIL import Image, ImageDraw
-from metrics.iou import DefaultIntersectionOverTheUnion
-from nptyping import NDArray
-from selection.random_selector import RandomSelector
-# from nms.suppressors.default import NonMaximumSuppression
-# from nms.iou import DefaultNonMaximumSuppression
-from suppression.sector_suppression import SectorSuppression
+from od_toolbelt.nms.metrics import DefaultIntersectionOverTheUnion
+from od_toolbelt.nms.selection import RandomSelector
+from od_toolbelt.nms.suppression import SectorSuppression, CartesianProductSuppression
+import od_toolbelt as od
 
 logger = logging.getLogger("nms_example")
 logger.setLevel(logging.DEBUG)
@@ -24,7 +23,7 @@ logger.addHandler(handler)
 
 def setup() -> Path:
     # return Path(rootpath.detect(), "tests", "base/tests/test_data")
-    return Path("C:/dev/detection-enhancer/base/tests/test_data")
+    return Path("C:/dev/od-toolbelt/base/tests/test_data")
 
 
 def to_box(x: List[Tuple[int, int]], shape: Tuple[int, int]) -> (NDArray[(2, 2), np.float64], NDArray[(Any,), np.float64]):
@@ -65,7 +64,7 @@ def draw(boxes: List[List[Tuple[int, int]]], img: Image.Image):
 
 def draw_cartesian(boxes: List[List[Tuple[int, int]]], img_raw: Image.Image):
     boxes_cart = product(boxes, boxes)
-    iou = DefaultIntersectionOverTheUnion()
+    iou = DefaultIntersectionOverTheUnion(0.4)
     shp = np.asarray(img_raw).shape
     print(len([b for b in boxes_cart]))
     boxes_cart = [x for x in product(boxes, boxes)]
@@ -77,7 +76,7 @@ def draw_cartesian(boxes: List[List[Tuple[int, int]]], img_raw: Image.Image):
         try:
             box1 = np.expand_dims(to_box(boxes_cart[i][0], shp), 0)
             box2 = np.expand_dims(to_box(boxes_cart[i][1], shp), 0)
-            this_iou = iou.compute_cube(box1, box2)
+            this_iou = iou.compute_many(box1, box2)
         except Exception as e:
             print(boxes_cart[0])
             print(len(boxes_cart[0]))
@@ -145,6 +144,7 @@ def get_data(n_boxes: int, std: float, show=False):
     print(f"ORIG LEN BOXES = {len(boxes)}")
     new_boxes = jitter_boxes(boxes, n_boxes, img, std)
     boxes_arr, confidences_arr = to_box_multi(new_boxes, shape)
+    labels_arr = np.random.choice((0, 1), size=boxes_arr.shape[0])
 
     # TODO: Number of boxes decreases during to_box_multi. Fix this
     print(f"LEN BOXES = {len(boxes)}")
@@ -153,26 +153,32 @@ def get_data(n_boxes: int, std: float, show=False):
 
     if show:
         draw(boxes, img)
-    return boxes_arr, confidences_arr, img, shape
+    return boxes_arr, confidences_arr, labels_arr, img, shape
 
 # TODO: MIGRATE TO OPENCV
 
 
 def apply_nms():
     logger.debug("beginning example")
-    boxes, confs, img, shape = get_data(n_boxes=3, std=0.03, show=False)
+    boxes, confs, labels, img, shape = get_data(n_boxes=3, std=0.03, show=False)
     print(f"STARTING WITH {len(boxes)} boxes")
     # draw(to_list_multi(boxes, np.asarray(img)[:, :, 0].shape), img)
 
     selector = RandomSelector()
-    metric = DefaultIntersectionOverTheUnion()
+    metric = DefaultIntersectionOverTheUnion(0.4, "lt")
 
-    # nms = CartesianProductSuppression(metric_threshold=0.1, selector=selector, metric=metric)
-    nms = SectorSuppression(metric=metric, selector=selector, metric_threshold=0.1, sector_divisions=1)
+    # nms = CartesianProductSuppression(selector=selector, metric=metric)
+    nms = SectorSuppression(metric=metric, selector=selector, sector_divisions=1)
 
     # pboxes, pconfs = nms.transform(boxes, confs)
     # boxes = boxes[confs > 0.5, :, :]
-    pboxes, pconfs = nms.transform(boxes, confs)
+    data = od.BoundingBoxArray(
+        bounding_boxes=boxes,
+        confidences=confs,
+        labels=labels
+    )
+
+    pboxes = nms.transform(data).bounding_boxes
 
     bboxes = to_list_multi(np.asarray(pboxes), shape)
     # draw_cartesian(bboxes, img)

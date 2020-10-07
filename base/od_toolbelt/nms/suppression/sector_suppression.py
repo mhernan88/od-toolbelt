@@ -108,12 +108,12 @@ class SectorSuppression(CartesianProductSuppression):
                     break
 
         prod = itertools.product(all_bids[on_boundary], all_bids)
-        selected_bids, evaluated_bids = self._evaluate_overlap(bounding_box_array.bounding_boxes, prod)
+        selected_bids, evaluated_bids = self._evaluate_overlap(bounding_box_array, prod)
         evaluated_bids = np.asarray(list(evaluated_bids), dtype=np.int64)
         evaluated_bids_inv = np.ones(bounding_box_array.bounding_boxes.shape[0], np.bool)
         evaluated_bids_inv[evaluated_bids] = 0
 
-        return bounding_box_array[selected_bids]
+        return bounding_box_array[np.asarray(selected_bids, dtype=np.int64)]
 
     @staticmethod
     def _in_sector(
@@ -172,7 +172,7 @@ class SectorSuppression(CartesianProductSuppression):
         return all_sector_bids
 
     def transform(
-        self,
+            self,
             bounding_box_array: BoundingBoxArray,
             *args,
             **kwargs
@@ -182,13 +182,16 @@ class SectorSuppression(CartesianProductSuppression):
             np.array(((0, 0), self.image_shape), dtype=np.int64),
         ]
         sectors, dividing_lines = self._create_sectors(image_sector)
-        bounding_box_array = self._handle_boundaries(
+        selected_bounding_box_arrays = [self._handle_boundaries(
             bounding_box_array,
             dividing_lines
-        )
+        )]
 
         all_sector_bids = self._assign_sectors(bounding_box_array.bounding_boxes, sectors)
-        selected_bounding_box_arrays = []
+        # selected_bounding_box_arrays = []
         for sector_bids in all_sector_bids:
-            selected_bounding_box_arrays.append(self._cp_transform(bounding_box_array[sector_bids]))
+            assert isinstance(sector_bids, list)
+            selected_bounding_box_arrays.append(
+                self._cp_transform(bounding_box_array[np.asarray(sector_bids, dtype=np.int64)])
+            )
         return concatenate(selected_bounding_box_arrays)

@@ -44,11 +44,11 @@ class CartesianProductSuppression(Suppressor):
 
     def _evaluate_overlap(
         self,
-        bounding_boxes: NDArray[(Any, 2, 2), np.float64],
-        bounding_box_ids: Iterator[
-            Tuple[Any, Any]
-        ],  # Replace with nested loop instead of CP
-        symmetric: bool = False,
+            bounding_box_array: BoundingBoxArray,
+            bounding_box_ids: Iterator[
+                Tuple[Any, Any]
+            ],  # Replace with nested loop instead of CP
+            symmetric: bool = False,
     ) -> Tuple[List[int], Set[int]]:
         bounding_box_ids = [x for x in bounding_box_ids]  # TEMP
         boundary_boudning_box_idsx = set([b[0] for b in bounding_box_ids])  # TEMP
@@ -60,7 +60,7 @@ class CartesianProductSuppression(Suppressor):
         selected_bids = []
         complementary_bids = []
         evaluated_bids = set()
-        no_overlap = np.full(bounding_boxes.shape[0], True, dtype=np.bool)
+        no_overlap = np.full(bounding_box_array.bounding_boxes.shape[0], True, dtype=np.bool)
         last_bid = -1
 
         empty = True
@@ -72,14 +72,19 @@ class CartesianProductSuppression(Suppressor):
             if (
                 (bids[1] not in evaluated_bids)
                 and (bids[0] != bids[1])
-                and not self.metric.within_range(bounding_boxes[bids[0]], bounding_boxes[bids[1]])
+                and not self.metric.within_range(
+                    bounding_box_array.lookup_box(bids[0]),
+                    bounding_box_array.lookup_box(bids[1])
+                )
             ):
                 complementary_bids.append(bids[1])
                 evaluated_bids.add(bids[0])
                 evaluated_bids.add(bids[1])
 
-                no_overlap[bids[0]] = False
-                no_overlap[bids[1]] = False
+                # no_overlap[bids[0]] = False
+                # no_overlap[bids[1]] = False
+                no_overlap[bounding_box_array.bounding_box_id_to_ix(bids[0])] = False
+                no_overlap[bounding_box_array.bounding_box_id_to_ix(bids[1])] = False
             last_bid = bids[0]
         if not symmetric and len(non_boundary_bounding_box_ids) > 0:
             no_overlap[list(non_boundary_bounding_box_ids)] = False
@@ -93,22 +98,25 @@ class CartesianProductSuppression(Suppressor):
 
     def _cp_transform(
             self,
-            bounding_box_array: BoundingBoxArray,
+            bounding_box_array: Optional[BoundingBoxArray],
             *args,
             **kwargs
-    ) -> BoundingBoxArray:
+    ) -> Optional[BoundingBoxArray]:
         """See base class documentation for transform().
 
         This method is intended to be called by a wrapper or inherited.
         """
+        if bounding_box_array is None:
+            return None
+
         bounding_box_ids_cp = itertools.product(
             bounding_box_array.bounding_box_ids, bounding_box_array.bounding_box_ids
         )
 
         selected_bids, _ = self._evaluate_overlap(
-            bounding_box_array.bounding_boxes, bounding_box_ids_cp
+            bounding_box_array, bounding_box_ids_cp
         )
-        return bounding_box_array[selected_bids]
+        return bounding_box_array[np.asarray(selected_bids, dtype=np.int64)]
 
     def burst(
         self,
