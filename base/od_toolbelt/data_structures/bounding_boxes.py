@@ -41,6 +41,24 @@ class BoundingBoxArray:
         else:
             self.bounding_box_ids = bounding_box_ids
 
+    def __getitem__(
+            self,
+            item: Union[int, List[int], NDArray[(Any,), np.int64]]
+    ):
+        if isinstance(item, int):
+            ixs = self.bounding_box_ids == item
+            item = np.array((item,), dtype=np.int64)
+        else:
+            # TODO: Optimize loop over self.bounding_box_ids
+            ixs = [True if bid in item else False for bid in self.bounding_box_ids]
+            item = np.asarray(item, dtype=np.int64)
+        return BoundingBoxArray(
+            bounding_boxes=self.bounding_boxes[ixs, :, :],
+            confidences=self.confidences[ixs],
+            labels=self.labels[ixs],
+            bounding_box_ids=item,
+        )
+
     def __iter__(self):
         for i in np.arange(0, self.bounding_boxes.shape[0]):
             yield i, self.bounding_boxes[i, :, :], self.confidences[i], self.labels[i]

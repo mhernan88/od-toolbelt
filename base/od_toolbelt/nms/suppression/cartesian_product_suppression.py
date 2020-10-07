@@ -34,16 +34,10 @@ class CartesianProductSuppression(Suppressor):
             bounding_box_array: BoundingBoxArray,
             *args,
             **kwargs
-    ) -> Tuple[
-        NDArray[(Any, 2, 2), np.float64],
-        NDArray[(Any,), np.float64],
-        NDArray[(Any,), np.int64],
-    ]:
+    ) -> BoundingBoxArray:
         """A wrapper for cp_transform."""
         return self._cp_transform(
-            bounding_box_array.bounding_boxes,
-            bounding_box_array.confidences,
-            bounding_box_array.labels,
+            bounding_box_array,
             *args,
             **kwargs
         )
@@ -98,42 +92,23 @@ class CartesianProductSuppression(Suppressor):
         return selected_bids, evaluated_bids
 
     def _cp_transform(
-        self,
-        bounding_boxes: NDArray[(Any, 2, 2), np.float64],
-        confidences: NDArray[(Any,), np.float64],
-        labels: Union[NDArray[(Any,), np.int64], List[Union[str, int]]],
-        bounding_box_ids: Optional[NDArray[(Any,), np.int64]] = None,
-        *args,
-        **kwargs
-    ) -> Tuple[
-        NDArray[(Any, 2, 2), np.float64],
-        NDArray[(Any,), np.float64],
-        NDArray[(Any,), np.int64],
-    ]:
+            self,
+            bounding_box_array: BoundingBoxArray,
+            *args,
+            **kwargs
+    ) -> BoundingBoxArray:
         """See base class documentation for transform().
 
         This method is intended to be called by a wrapper or inherited.
         """
-        bb = BoundingBoxArray(
-            bounding_boxes=bounding_boxes,
-            confidences=confidences,
-            labels=labels,
-            bounding_box_ids=bounding_box_ids,
-        )
-
-        # bounding_box_ids = np.arange(0, bounding_boxes.shape[0])
         bounding_box_ids_cp = itertools.product(
-            bb.bounding_box_ids, bb.bounding_box_ids
+            bounding_box_array.bounding_box_ids, bounding_box_array.bounding_box_ids
         )
 
         selected_bids, _ = self._evaluate_overlap(
-            bb.bounding_boxes, bounding_box_ids_cp
+            bounding_box_array.bounding_boxes, bounding_box_ids_cp
         )
-        return (
-            bb.bounding_boxes[selected_bids, :, :],
-            bb.confidences[selected_bids],
-            bb.labels[selected_bids],
-        )
+        return bounding_box_array[selected_bids]
 
     def burst(
         self,
