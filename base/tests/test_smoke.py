@@ -23,10 +23,12 @@ def smoke_test_setup():
 def test_smoke1():
     bb, metric, selector = smoke_test_setup()
     suppressor = CartesianProductSuppression(metric=metric, selector=selector)
-    suppressor.transform(bb)
+    result = suppressor.transform(bb)
+    result.check()
 
 
 def test_smoke2():
     bb, metric, selector = smoke_test_setup()
     suppressor = SectorSuppression(metric=metric, selector=selector, sector_divisions=2)
-    suppressor.transform(bb)
+    result = suppressor.transform(bb)
+    result.check()

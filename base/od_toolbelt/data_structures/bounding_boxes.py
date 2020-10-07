@@ -257,8 +257,6 @@ class BoundingBoxArray:
                 bounding_box_id = np.array((bounding_box_id,), dtype=np.int64)
         else:
             bounding_box_id = np.array((np.max(self.bounding_box_ids) + 1,), dtype=np.int64)
-        print(f"BBID SHAPE: {bounding_box_id.shape}")
-        print(f"SELF.BBID SHAPE: {self.bounding_box_ids.shape[0]}")
         self.bounding_box_ids = np.append(
             self.bounding_box_ids, bounding_box_id, axis=0
         )
@@ -307,3 +305,36 @@ class BoundingBoxArray:
         if self.labels.dtype not in valid_ints:
             self._check_numpy_warning("self.labels", valid_ints)
         self._check_lengths()
+
+
+def concatenate(bounding_box_arrays: List[BoundingBoxArray]):
+    """Concatenates multiple bounding box arrays into a single one.
+
+    Args:
+        bounding_box_arrays:
+
+    Returns:
+
+    """
+    output = bounding_box_arrays[0]
+    for ix, bounding_box_array in enumerate(bounding_box_arrays):
+        if ix == 0:
+            output = bounding_box_array
+        else:
+            old_bounding_boxes = output.bounding_boxes
+            old_confidences = output.confidences
+            old_labels = output.labels
+            old_bounding_box_ids = output.bounding_box_ids
+
+            new_bounding_boxes = bounding_box_array.bounding_boxes
+            new_confidences = bounding_box_array.confidences
+            new_labels = bounding_box_array.labels
+            new_bounding_box_ids = bounding_box_array.bounding_box_ids
+
+            output = BoundingBoxArray(
+                bounding_boxes=np.concatenate((old_bounding_boxes, new_bounding_boxes), axis=0),
+                confidences=np.concatenate((old_confidences, new_confidences), axis=0),
+                labels=np.concatenate((old_labels, new_labels), axis=0),
+                bounding_box_ids=np.concatenate((old_bounding_box_ids, new_bounding_box_ids), axis=0),
+            )
+    return output

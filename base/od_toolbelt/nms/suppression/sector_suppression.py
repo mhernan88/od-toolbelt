@@ -8,7 +8,7 @@ from typing import Any, Tuple, List  # type: ignore
 from od_toolbelt.nms.metrics.base import Metric  # type: ignore
 from od_toolbelt.nms.selection.base import Selector  # type: ignore
 from od_toolbelt.nms.suppression.cartesian_product_suppression import CartesianProductSuppression  # type: ignore
-from od_toolbelt import BoundingBoxArray  # type: ignore
+from od_toolbelt import BoundingBoxArray, concatenate  # type: ignore
 
 
 class SectorSuppression(CartesianProductSuppression):
@@ -176,11 +176,7 @@ class SectorSuppression(CartesianProductSuppression):
             bounding_box_array: BoundingBoxArray,
             *args,
             **kwargs
-    ) -> Tuple[
-        NDArray[(Any, 2, 2), np.float64],
-        NDArray[(Any,), np.float64],
-        NDArray[(Any,), np.int64],
-    ]:
+    ) -> BoundingBoxArray:
         """See base class documentation."""
         image_sector = [
             np.array(((0, 0), self.image_shape), dtype=np.int64),
@@ -192,16 +188,7 @@ class SectorSuppression(CartesianProductSuppression):
         )
 
         all_sector_bids = self._assign_sectors(bounding_box_array.bounding_boxes, sectors)
-        selected_bounding_boxes = []
-        selected_confidences = []
-        selected_labels = []
+        selected_bounding_box_arrays = []
         for sector_bids in all_sector_bids:
-            this_bounding_box_array = self._cp_transform(bounding_box_array[sector_bids])
-            selected_bounding_boxes.append(this_bounding_box_array.bounding_boxes)
-            selected_confidences.append(this_bounding_box_array.confidences)
-            selected_labels.append(this_bounding_box_array.labels)
-        return (
-            np.concatenate(selected_bounding_boxes, axis=0),
-            np.concatenate(selected_confidences, axis=0),
-            np.concatenate(selected_labels, axis=0)
-        )
+            selected_bounding_box_arrays.append(self._cp_transform(bounding_box_array[sector_bids]))
+        return concatenate(selected_bounding_box_arrays)
