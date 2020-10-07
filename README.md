@@ -48,6 +48,7 @@ with only one bounding box per object.
 *[Feb 19, 2015 - morning sunrise, 02](https://www.flickr.com/photos/72098626@N00/16043767804) by [Ed Yourdon](https://www.flickr.com/photos/72098626@N00) is licensed under [CC BY-NC-SA 2.0](https://creativecommons.org/licenses/by-nc-sa/2.0/?ref=ccsearch&atype=rich)*
 
 #### Sector-Based Non-Maximum Suppression Explanation
+\[Currently Implemented]
 Although non-maximum suppression (NMS) does significantly reduce the number of bounding boxes and typically provides a 
 satisfactory result, it is an expensive algorithm. Greedy NMS compares each bounding box against
 every other bounding box in the image. In our example, we have 22 predictions (8 correct predictions and 14 false positives). 
@@ -103,6 +104,21 @@ that all of the remaining boxes will fall entirely within a single sector.
 Next, we iterate over each sector and perform Greedy NMS on the bounding boxes in each sector. We append the results
 of each iteration of Greedy NMS to our existing set of selected boxes. At the end of the entire process, we end up with
 a full set of selected bounding boxes.
+
+#### Consensus-Based Non-Maximum Suppression Selection Explanation
+\[On Roadmap]
+
+Typcially, Non-Maximum Suppression is run on a single image. When performing object detection on images, many camera factors, like lighting, focus, contrast, play a role in the number of correct detections an object detection model is able to make. Even subtle changes, which can be imperceptible to the human eye, can have an effect on a model's performance, and can lead to decreases in model precision and recall.
+
+To combat this, we can use a consensus-based image selector. The way this works is:
+1. Instead of processing a single image, provide a burst of images (of the same subject from the same angle) to the Non-Maximum Suppression Algorithm.
+2. Perform Non-Maximum Suppression upon each image in the burst (in isolation).
+3. Concatenate remaining bounding boxes from all images into a single array of bounding boxes.
+4. For all bounding boxes, identify box pairs where intersection over the union (or another metric) exceeds a user provided threshold (e.g. 80%, 90%, etc.). Each of these box pairs (i.e. box groups) represent the same identification. This can be extrapolated to triplets of boxes, quadruplets of boxes, and beyond.
+5. Retain all box groups where the number of boxes exceeds a threshold set by the developer (e.g. a threshold of 3 for 5 images in the burst, a threshold of 2 boxes for 3 images in the burst, etc.).
+6. To reduce box groups into a single bounding box, the average or median of each corner of the boxes can be calculated.
+
+Now, this adjustment to the normal Non-Maximum Suppression methodology has the benefit of potentially improved precision and recall, but that comes at the cost of increased processing time, as bounding boxes from multiple images need to be processed in order to create one image's worth of detections. To help combat this, Sector-Based Non-Maximum Suppression (or other variants of Non-Maximum Suppression) can be used to improve efficiency.
 
 ## Getting started
 **Installation:**
