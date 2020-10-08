@@ -314,26 +314,6 @@ non-maximum suppression.
 
 They are inherited off of a base class. To use them, the developer should create an instance of a suppressor class. 
 
-**Individual Photo:**  
-After creating an instance of the class, the developer simply needs to run the transform() method in order to apply
-non-maximum suppression to all bounding boxes and associated confidence values in a given photo.
-
-**Burst Mode:**  
-After creating an instance of the class, the developer can run the burst() method in order to apply non-maximum
-suppression to a "burst" of photos. This effectively concatenates all arrays of bounding boxes into a single
-contiguous array. The bounding boxes in this array are all evaluated concurrently. This, in most cases, leads to
-a higher precision, but can also lead to lower recall depending on the upstream object detection model.
-
-This is intended to be run on bounding box predictions of multiple photos in sequence. This is intended to allow
-non-maximum suppression algorithms to have multiple sets of predictions to pull bounding boxes from in case one
-photo is missing a bounding box that is in other similar photos.
-
-Note that passing a single photo to burst() is effectively the same as running transform() on that photo.
-
-**Batch Mode:**  
-After creating an instance of the class, the developer can run the batch() method in order to apply non-maximum
-suppression to a "batch" of "bursts". This simply loops the burst() method over multiple different sets of photos.
-
 ### Metrics
 Metrics are how we measure the degree to which two bounding boxes overlap. Intersection over the union is one such
 metric, but other metrics can be used as well. To use them, the developer should create an instance of a metric class.
@@ -350,8 +330,8 @@ After creating an instance of a selector class, the developer simply needs to pa
 to the select() method. A single identifier is returned.
 
 ## Roadmap
-1. Python code optimizations.
-2. Create 'recipes' (wrappers for simple use cases like iou-based greedy non-maximum suppression).
+1. Python code optimizations - *In Progress*.
+2. Add consensus-based selector.
 3. Add additional selectors (e.g. first selector, average selector, median selector, etc.).
 4. Add additional metrics (e.g. IOU^2, etc.).
 5. Complete refactorization (version 0.1).
