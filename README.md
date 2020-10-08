@@ -124,11 +124,17 @@ Lastly, the remaining predictions are reduced once again. This is done by taking
 measure) of each point of each set of overlapping boxes.
 
 A couple of notes here:
+
 1. This methodology works best for real-life scenarios with unreliable lighting. Taking photos outdoors is an excellent
 example of this. From second-to-second, there can be changes to the lighting that throw off some model predictions, but
 also make some other model predictions more reliable. Consensus-based selection operates off of the assumption that
 ensembling these unreliable predictions can yield a much more powerful prediction.
-2. There is a tradeoff here. As we add more images (which adds more predictions to our ensemble), we add more compute
+2. The obvious first choice to boost model performance is to create a better object detection model (possibly with 
+image augmentation for the abnormal lighting/camera scenarios). In many cases it's either not doable
+(possibly due to not being in control of the model), prohibitively expensive (either in terms of money
+or training time), or the model has just plateaued in terms of performance (i.e. it does not respond augmentation or 
+other changes). In these scenarios, consensus-based selection makes sense.
+3. There is a tradeoff here. As we add more images (which adds more predictions to our ensemble), we add more compute
 onto our system. If speed of prediction is not paramount, then this is not a problem. If speed of prediction is
 important, then using a smarter Non-Maximum Suppression algorithm (like Sector-Based Non-Maximum Suppression) is very 
 useful.
