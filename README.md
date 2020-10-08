@@ -53,7 +53,7 @@ satisfactory result, it is an expensive algorithm. Greedy NMS compares each boun
 every other bounding box in the image. In our example, we have 22 predictions (8 correct predictions and 14 false positives). 
 In order to compare each bounding box against every other bounding box, we need to perform (n^2 - n) / 2 comparisons. 
 In our case, that would be (22 ^ 2 - 22) / 2 operations (where N represents the number of bounding boxes being evaluated), 
-which comes out to 231 comparisons. As we scale up n, the number of comparisons becomes very large very fast.
+which comes out to 231 comparisons. As we scale up n, the number of comparisons becomes very large very fast.  
 ![Raw Image with Detections + False Positives](https://od-toolbox.s3.amazonaws.com/images/raw_image_with_predictions_and_false_positives.jpg)  
 *[Feb 19, 2015 - morning sunrise, 02](https://www.flickr.com/photos/72098626@N00/16043767804) by [Ed Yourdon](https://www.flickr.com/photos/72098626@N00) is licensed under [CC BY-NC-SA 2.0](https://creativecommons.org/licenses/by-nc-sa/2.0/?ref=ccsearch&atype=rich)*
 
@@ -63,7 +63,7 @@ bisect our image twice into four sectors. This results in M + 2NM + (M + 1) * (N
 the number of bounding boxes being evaluated and M represents the number of sectors that our image has been split
 into). This assumes a roughly equal distribution of images over sectors. In reality, the actual efficiency of this
 algorithm will be somewhere between slightly slower than Greedy NMS (in worst case scenarios) and up to around 80%
-faster than Greedy-NMS in more optimistic scenarios.
+faster than Greedy-NMS in more optimistic scenarios.  
 ![Raw Image with Detections, False Positives, and Sectors](https://od-toolbox.s3.amazonaws.com/images/raw_image_with_predictions_and_false_positives_and_sectors.jpg)  
 *[Feb 19, 2015 - morning sunrise, 02](https://www.flickr.com/photos/72098626@N00/16043767804) by [Ed Yourdon](https://www.flickr.com/photos/72098626@N00) is licensed under [CC BY-NC-SA 2.0](https://creativecommons.org/licenses/by-nc-sa/2.0/?ref=ccsearch&atype=rich)*
 
@@ -87,7 +87,7 @@ makes it worthwhile only after 50 bounding boxes in its current state.
 **Actual Performance Comparisons at Different Numbers of Bounding Boxes**  
 To be completed...
 
-We then identify which bounding boxes are overlapping with boundaries. 
+We then identify which bounding boxes are overlapping with boundaries.  
 ![Raw Images with Detections, False Positives, Sectors, and Detections on Boundaries1](https://od-toolbox.s3.amazonaws.com/images/raw_image_with_predictions_and_false_positives_and_sectors_highlighted1.JPG)  
 *[Feb 19, 2015 - morning sunrise, 02](https://www.flickr.com/photos/72098626@N00/16043767804) by [Ed Yourdon](https://www.flickr.com/photos/72098626@N00) is licensed under [CC BY-NC-SA 2.0](https://creativecommons.org/licenses/by-nc-sa/2.0/?ref=ccsearch&atype=rich)*
 
@@ -96,7 +96,7 @@ Our first set of selected bounding boxes is picked from these boxes using Greedy
 bounding boxes, the candidate boxes are then removed from consideration from downsteram comparisons. This guarantees
 that all of the remaining boxes will fall entirely within a single sector.
 
-*Note, that the above means SB-NMS prioritizes bounding boxes that fall on boundaries.*
+*Note, that the above means SB-NMS prioritizes bounding boxes that fall on boundaries.*  
 ![Raw Images with Detections, False Positives, Sectors, and Detections on Boundaries2](https://od-toolbox.s3.amazonaws.com/images/raw_image_with_predictions_and_false_positives_and_sectors_highlighted2.JPG)  
 *[Feb 19, 2015 - morning sunrise, 02](https://www.flickr.com/photos/72098626@N00/16043767804) by [Ed Yourdon](https://www.flickr.com/photos/72098626@N00) is licensed under [CC BY-NC-SA 2.0](https://creativecommons.org/licenses/by-nc-sa/2.0/?ref=ccsearch&atype=rich)*
 
@@ -106,17 +106,118 @@ a full set of selected bounding boxes.
 
 #### Consensus-Based Non-Maximum Suppression Selection Explanation \[On Roadmap]
 
-Typcially, Non-Maximum Suppression is run on a single image. When performing object detection on images, many camera factors, like lighting, focus, contrast, play a role in the number of correct detections an object detection model is able to make. Even subtle changes, which can be imperceptible to the human eye, can have an effect on a model's performance, and can lead to decreases in model precision and recall.
+Typically, Non-Maximum Suppression is run on a single image. When performing object detection on images, 
+many camera factors, like lighting, focus, contrast, play a role in the number of correct detections an object 
+detection model is able to make. Even subtle changes, which can be imperceptible to the human eye, can have an 
+effect on a model's performance, and can lead to decreases in model precision and recall.
 
-To combat this, we can use a consensus-based image selector. The way this works is:
-1. Instead of processing a single image, provide a burst of images (of the same subject from the same angle) to the Non-Maximum Suppression Algorithm.
-2. Perform Non-Maximum Suppression upon each image in the burst (in isolation).
-3. Concatenate remaining bounding boxes from all images into a single array of bounding boxes.
-4. For all bounding boxes, identify box pairs where intersection over the union (or another metric) exceeds a user provided threshold (e.g. 80%, 90%, etc.). Each of these box pairs (i.e. box groups) represent the same identification. This can be extrapolated to triplets of boxes, quadruplets of boxes, and beyond.
-5. Retain all box groups where the number of boxes exceeds a threshold set by the developer (e.g. a threshold of 3 for 5 images in the burst, a threshold of 2 boxes for 3 images in the burst, etc.).
-6. To reduce box groups into a single bounding box, the average or median of each corner of the boxes can be calculated.
+Consensus-Based Non-Maximum Suppression Selection (consensus-based-selection) uses a burst of multiple photos of the 
+same subject, from the same angle at approximately the same time (think of taking a burst of 3 images from you phone in 
+1 second). 
 
-Now, this adjustment to the normal Non-Maximum Suppression methodology has the benefit of potentially improved precision and recall, but that comes at the cost of increased processing time, as bounding boxes from multiple images need to be processed in order to create one image's worth of detections. To help combat this, Sector-Based Non-Maximum Suppression (or other variants of Non-Maximum Suppression) can be used to improve efficiency.
+Consensus-based selection then performs Non-Maximum Suppression on each photo individually (possibly using Sector-Based
+Non-Maximum Suppression...), layers the suppressed predictions onto each other (forming a single image of predictions).
+Then an ensemble of predictions is taken where overlapping bounding boxes boost "confidence", while any singleton
+predictions (that do not overlap with any other images) are considered random noise and ignored.
+
+Lastly, the remaining predictions are reduced once again. This is done by taking the average (or median, or another 
+measure) of each point of each set of overlapping boxes.
+
+A couple of notes here:
+1. This methodology works best for real-life scenarios with unreliable lighting. Taking photos outdoors is an excellent
+example of this. From second-to-second, there can be changes to the lighting that throw off some model predictions, but
+also make some other model predictions more reliable. Consensus-based selection operates off of the assumption that
+ensembling these unreliable predictions can yield a much more powerful prediction.
+2. There is a tradeoff here. As we add more images (which adds more predictions to our ensemble), we add more compute
+onto our system. If speed of prediction is not paramount, then this is not a problem. If speed of prediction is
+important, then using a smarter Non-Maximum Suppression algorithm (like Sector-Based Non-Maximum Suppression) is very 
+useful.
+
+##### Consensus-Based Non-Maximum Suppression Selection Example
+
+We are going to take a photo of the following subject to pass through our object detection model:  
+![Raw Mug Images](https://od-toolbox.s3.amazonaws.com/images/consensus-selection/1-original.JPG)  
+*Copyright 2020 - Michael Hernandez*
+
+Instead of taking a single picture, we take a burst of 3 (this number can be scaled to fit the user's needs) images in a row:  
+![Distorted Mug Images](https://od-toolbox.s3.amazonaws.com/images/consensus-selection/2-distortions.JPG)  
+*Copyright 2020 - Michael Hernandez*
+
+As we can see above, due to different lighting (exaggerated in this case), we get three photos of the same subject
+from the same angle, but with slight differences. In real life scenarios with unreliable lighting (e.g. outdoors, 
+indoor flickering lighting) or an unreliable camera (e.g. some phone cameras, unsteady holding of camera) images
+will have minor imperfections which can change moment-to-moment.
+
+*Note: For the rest of this example, we'll be showing un-distorted images for simplicity*
+
+Our first step in Consensus-Based Non-Maximum Suppression Selection is to perform
+Non-Maximum Suppression on our images in isolation.
+
+Raw predictions for first image:  
+![Raw Predictions1](https://od-toolbox.s3.amazonaws.com/images/consensus-selection/3-image1-raw-predictions.JPG)  
+*Copyright 2020 - Michael Hernandez*
+
+Suppressed predictions for first image:  
+![Suppressed Predictions1](https://od-toolbox.s3.amazonaws.com/images/consensus-selection/4-image1-processed-predictions.JPG)  
+*Copyright 2020 - Michael Hernandez*
+
+Raw predictions for second image:  
+![Raw Predictions2](https://od-toolbox.s3.amazonaws.com/images/consensus-selection/5-image2-raw-predictions.JPG)  
+*Copyright 2020 - Michael Hernandez*
+
+Suppressed predictions for second image:  
+![Suppressed Predictions2](https://od-toolbox.s3.amazonaws.com/images/consensus-selection/6-image2-processed-predictions.JPG)  
+*Copyright 2020 - Michael Hernandez*
+
+Raw predictions for third image:  
+![Raw Predictions3](https://od-toolbox.s3.amazonaws.com/images/consensus-selection/7-image3-raw-predictions.JPG)  
+*Copyright 2020 - Michael Hernandez*
+
+Suppressed predictions for third image:  
+![Suppressed Predictions3](https://od-toolbox.s3.amazonaws.com/images/consensus-selection/8-image3-processed-predictions.JPG)  
+*Copyright 2020 - Michael Hernandez*
+
+As a result, we now have the following filtered predictions after performing non-maximum suppression:  
+![All Suppressed Predictions](https://od-toolbox.s3.amazonaws.com/images/consensus-selection/9-all-processed-predictions.JPG)  
+*Copyright 2020 - Michael Hernandez*
+
+Since our predictions are of the same subject from the same angle (at approximately the same time), we can layer the
+predictions on top of each other:  
+![All Predictions Layered](https://od-toolbox.s3.amazonaws.com/images/consensus-selection/10-all-processed-to-warped-predictions.JPG)  
+*Copyright 2020 - Michael Hernandez*
+
+After layering, we can flatten all of the predictions down to a single layer (the bottom layer in the image is simply the original with no predictions):  
+![Flatten All Predictions Layered](https://od-toolbox.s3.amazonaws.com/images/consensus-selection/11-flatten-warped-processed-predictions.JPG)  
+*Copyright 2020 - Michael Hernandez*
+
+After flattening, we get the resulting image with the following predictions upon which we calculate the intersection
+over the union (IOU) for each pair of boxes (only non-zero IOU values are shown):  
+![All Predictions Flattened IOU](https://od-toolbox.s3.amazonaws.com/images/consensus-selection/12-all-boxes-layered.JPG)  
+*Copyright 2020 - Michael Hernandez*
+
+We then select a threshold value that each IOU must exceed in order for two boxes to be grouped together (i.e. boxes
+that are of the same subject):  
+![All Predictions Flattened Box Groups](https://od-toolbox.s3.amazonaws.com/images/consensus-selection/13-all-boxes-layered-with-box-groups.JPG)  
+*Copyright 2020 - Michael Hernandez*
+
+Next, we ensemble these predictions together. Since we have 3 images worth of predictions, any box group that contains
+a majority (i.e. 2) boxes will retain its predictions. All other box groups will be removed:  
+![All Predictions Flattened Votes](https://od-toolbox.s3.amazonaws.com/images/consensus-selection/14-all-boxes-layered-with-box-groups-with-votes.JPG)  
+*Copyright 2020 - Michael Hernandez*
+
+Now that ensembling has taken place, we are only left with three box groups' worth of predictions:  
+![All Predictions Flattened Filtered](https://od-toolbox.s3.amazonaws.com/images/consensus-selection/15-all-boxes-layered-only-valid.JPG)  
+*Copyright 2020 - Michael Hernandez*
+
+The final step is to remove any excess boxes. This can be done in a variety of ways. For this example, since we already
+know which boxes overlap, we can actually take the average (or median) point of each corner and use that as the corners
+of our resulting bounding boxes. That results in the following yellow bounding boxes:  
+![Pre-Final Predictions](https://od-toolbox.s3.amazonaws.com/images/consensus-selection/16-all-boxes-layered-only-valid-average-prediction.JPG)  
+*Copyright 2020 - Michael Hernandez*
+
+And after removing the old bounding boxes we are left with only the correct ones:  
+![Final Predictions](https://od-toolbox.s3.amazonaws.com/images/consensus-selection/16-all-boxes-layered-only-valid-average-prediction-only.JPG)  
+*Copyright 2020 - Michael Hernandez*
 
 ## Getting started
 **Installation:**
