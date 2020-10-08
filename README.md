@@ -330,7 +330,7 @@ After creating an instance of a selector class, the developer simply needs to pa
 to the select() method. A single identifier is returned.
 
 ## Roadmap
-1. Python code optimizations - *In Progress*.
+1. Python code optimizations - ***In Progress***.
 2. Add consensus-based selector.
 3. Add additional selectors (e.g. first selector, average selector, median selector, etc.).
 4. Add additional metrics (e.g. IOU^2, etc.).
