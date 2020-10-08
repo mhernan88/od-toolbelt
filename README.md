@@ -133,7 +133,7 @@ onto our system. If speed of prediction is not paramount, then this is not a pro
 important, then using a smarter Non-Maximum Suppression algorithm (like Sector-Based Non-Maximum Suppression) is very 
 useful.
 
-##### Consensus-Based Non-Maximum Suppression Selection Example
+#### Consensus-Based Non-Maximum Suppression Selection Example
 
 We are going to take a photo of the following subject to pass through our object detection model:  
 ![Raw Mug Images](https://od-toolbox.s3.amazonaws.com/images/consensus-selection/1-original.JPG)  
