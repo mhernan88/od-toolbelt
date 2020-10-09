@@ -1,3 +1,5 @@
+# Copyright 2020 Michael Hernandez
+
 from __future__ import annotations  # type: ignore
 
 import itertools  # type: ignore

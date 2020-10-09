@@ -1,10 +1,11 @@
-import pytest
-import random
-import logging
-from copy import copy
-from .test_utils.test_setup import setup_test_case, jitter_boxes
+# Copyright 2020 Michael Hernandez
 
-import od_toolbelt as od
+import random  # type: ignore
+import logging  # type: ignore
+from copy import copy  # type: ignore
+from .test_utils.test_setup import setup_test_case, jitter_boxes  # type: ignore
+
+import od_toolbelt as od  # type: ignore
 
 random.seed(7171)
 
