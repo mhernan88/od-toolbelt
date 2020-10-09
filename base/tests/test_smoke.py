@@ -5,11 +5,11 @@ from od_toolbelt.nms.suppression import CartesianProductSuppression, SectorSuppr
 
 from od_toolbelt.nms.metrics.iou import DefaultIntersectionOverTheUnion
 from od_toolbelt.nms.selection.random_selector import RandomSelector
-from .test_utils.test_setup import setup
+from .test_utils.test_setup import setup_test_case
 
 
 def smoke_test_setup():
-    bounding_boxes, confidences, labels = setup()
+    bounding_boxes, confidences, labels = setup_test_case()
     bb = BoundingBoxArray(
         bounding_boxes=bounding_boxes, confidences=confidences, labels=labels
     )

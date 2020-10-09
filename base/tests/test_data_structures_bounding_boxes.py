@@ -90,7 +90,7 @@ def test_check7():
         bounding_boxes=bounding_boxes, confidences=confidences, labels=labels
     )
 
-    with pytest.raises(AssertionError):
+    with pytest.raises(ValueError):
         bb.check()
 
 
@@ -109,7 +109,7 @@ def test_check9():
         bounding_boxes=bounding_boxes, confidences=confidences, labels=labels
     )
 
-    with pytest.raises(AssertionError):
+    with pytest.raises(ValueError):
         bb.check()
 
 

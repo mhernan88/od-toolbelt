@@ -365,7 +365,7 @@ class BoundingBoxArray:
                 self._check_numpy_warning("bounding_box", valid_floats)
                 warn(
                     f"{prefix} bounding_box had wrong dtype: "
-                    f"expected={', '.join(valid_floats)}, actual={bounding_box.dtype}"
+                    f"expected={', '.join([self.dtypes[x] for x in valid_floats])}, actual={bounding_box.dtype}"
                 )
 
         if confidence is not None:
