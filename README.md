@@ -172,7 +172,7 @@ import od_toolbelt as od
 # All values with intersection over the union of 0.25 or less will be considered separate boxes.
 METRIC_THRESHOLD = 0.25
 
-metric = od.nms.metrics.DefaultIntersectionOverTheUnion(threshold=0.25, direction="lte")
+metric = od.nms.metrics.DefaultIntersectionOverTheUnion(threshold=METRIC_THRESHOLD, direction="lte")
 selector = od.nms.selection.RandomSelector()
 
 nms = od.nms.suppression.CartesianProductSuppression(
