@@ -17,11 +17,11 @@ class BoundingBoxArray:
     }
 
     def __init__(
-        self,
-        bounding_boxes: NDArray[(Any, 2, 2), np.float64],
-        confidences: NDArray[(Any,), np.float64],
-        labels: NDArray[(Any,), np.int64],
-        bounding_box_ids: Optional[NDArray[(Any,), np.int64]] = None,
+            self,
+            bounding_boxes: NDArray[(Any, 2, 2), np.float64],
+            confidences: NDArray[(Any,), np.float64],
+            labels: NDArray[(Any,), np.int64],
+            bounding_box_ids: Optional[NDArray[(Any,), np.int64]] = None,
     ):
         if isinstance(bounding_boxes, tuple):
             bounding_boxes = np.asarray(bounding_boxes, dtype=np.float64)
@@ -63,15 +63,29 @@ class BoundingBoxArray:
 
         return new_bounding_box_array
 
-    def __iter__(self):
+    def __iter__(
+            self
+    ):
         for i in np.arange(0, self.bounding_boxes.shape[0]):
             yield i, self.bounding_boxes[i, :, :], self.confidences[i], self.labels[i]
 
-    def __len__(self):
+    def __len__(
+            self
+    ):
         return self.bounding_boxes.shape[0]
 
+    def __str__(
+            self
+    ):
+        ids = ", ".join([str(x) for x in self.bounding_box_ids.tolist()])
+        return f"A bounding box array with ids: {ids}"
+
     def _check_values_and_update(
-        self, bounding_boxes, confidences, labels, bounding_box_ids
+            self,
+            bounding_boxes: NDArray[(Any, 2, 2), np.float64],
+            confidences: NDArray[(Any,), np.float64],
+            labels: NDArray[(Any,), np.int64],
+            bounding_box_ids: NDArray[(Any,), np.int64],
     ):
         bounding_boxes = np.asarray(bounding_boxes, dtype=np.float64)
         confidences = np.asarray(confidences, dtype=np.float64)
@@ -87,7 +101,11 @@ class BoundingBoxArray:
         self.labels = labels
         self.bounding_box_ids = bounding_box_ids
 
-    def to_dict(self) -> List[Dict[str, Union[float, int, Dict[str, float]]]]:
+    def to_dict(
+            self
+    ) -> List[
+        Dict[str, Union[float, int, Dict[str, float]]]
+    ]:
         bounding_boxes = []
         for i in np.arange(0, self.bounding_boxes.shape[0]):
             label = self.labels[i]
@@ -164,12 +182,19 @@ class BoundingBoxArray:
             bounding_boxes, confidences, labels, bounding_box_ids
         )
 
-    def from_json(self, filename, ignore_incoming_tag_ids: bool):
+    def from_json(
+            self,
+            filename: str,
+            ignore_incoming_tag_ids: bool
+    ):
         with open(filename, "r") as f:
             payload = json.load(f)
         self.from_dict(payload, ignore_incoming_tag_ids)
 
-    def to_json(self, filename):
+    def to_json(
+            self,
+            filename: str,
+    ):
         with open(filename, "w") as f:
             json.dump(self.to_dict(), f)
 
@@ -218,16 +243,24 @@ class BoundingBoxArray:
             )
             writer.writerows(rows)
 
-    def bounding_box_id_to_ix(self, bid: int):
+    def bounding_box_id_to_ix(
+            self,
+            bid: int
+    ):
         return np.argwhere(self.bounding_box_ids == int(bid))
 
-    def lookup_box(self, bid: int):
+    def lookup_box(
+            self,
+            bid: int
+    ):
         box = self.bounding_boxes[self.bounding_box_ids == int(bid), :, :][0]
         assert len(box.shape) == 2
         return box
 
     def _check_numpy_warning(
-        self, variable_label: str, options: Union[Iterator[str], Iterator[np.dtype]]
+            self,
+            variable_label: str,
+            options: Union[Iterator[str], Iterator[np.dtype]]
     ):
         text = f"In BoundingBoxesArray.check(), {variable_label} dtype is not "
         options = [opt if isinstance(opt, str) else self.dtypes[opt] for opt in options]
@@ -258,7 +291,8 @@ class BoundingBoxArray:
     def append(
         self,
         bounding_box: Union[
-            NDArray[(2, 2), np.float64], NDArray[(1, 2, 2), np.float64]
+            NDArray[(2, 2), np.float64],
+            NDArray[(1, 2, 2), np.float64],
         ],
         confidence: Union[float, NDArray[(1,), np.float64]],
         label: Union[int, NDArray[(1,), np.int64]],

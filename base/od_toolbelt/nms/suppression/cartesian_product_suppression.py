@@ -94,6 +94,8 @@ class CartesianProductSuppression(Suppressor):
             selected_bids.extend(no_overlap_boxes)
             evaluated_bids.update(selected_bids)
 
+        z = [str(x) for x in selected_bids]  # TODO: REMOVE
+        print(f"SELECTED BIDS2: {', '.join(z)}")  # TODO: REMOVE
         return selected_bids, evaluated_bids
 
     def _cp_transform(
@@ -116,6 +118,8 @@ class CartesianProductSuppression(Suppressor):
         selected_bids, _ = self._evaluate_overlap(
             bounding_box_array, bounding_box_ids_cp
         )
+
+        print(f"SELECTED BIDS ARE: {', '.join([str(x) for x in selected_bids])}")  # TODO: REMOVE
         return bounding_box_array[np.asarray(selected_bids, dtype=np.int64)]
 
     def burst(
