@@ -169,7 +169,7 @@ Once we have an instance of our suppression algorithm, we run the transform() me
 ```python
 import od_toolbelt as od
 
-# All values with intersection over the union of 0.25 or less will be considered separate boxes.
+# All pairs of bounding boxes with intersection over the union of 0.25 or less will be considered separate boxes.
 METRIC_THRESHOLD = 0.25
 
 metric = od.nms.metrics.DefaultIntersectionOverTheUnion(threshold=METRIC_THRESHOLD, direction="lte")
