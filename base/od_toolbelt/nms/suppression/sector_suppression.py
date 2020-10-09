@@ -1,13 +1,14 @@
 from __future__ import annotations  # type: ignore
 
 import itertools  # type: ignore
+import numpy as np  # type: ignore
+from nptyping import NDArray  # type: ignore
 from typing import Any, Tuple, List  # type: ignore
 
-import numpy as np  # type: ignore
-from metrics.base import Metric  # type: ignore
-from nptyping import NDArray  # type: ignore
-from selection.base import Selector  # type: ignore
-from suppression.cartesian_product_suppression import CartesianProductSuppression  # type: ignore
+from od_toolbelt.nms.metrics.base import Metric  # type: ignore
+from od_toolbelt.nms.selection.base import Selector  # type: ignore
+from od_toolbelt.nms.suppression.cartesian_product_suppression import CartesianProductSuppression  # type: ignore
+from od_toolbelt import BoundingBoxArray, concatenate  # type: ignore
 
 
 class SectorSuppression(CartesianProductSuppression):
@@ -15,10 +16,9 @@ class SectorSuppression(CartesianProductSuppression):
         self,
         metric: Metric,
         selector: Selector,
-        metric_threshold: float,
         sector_divisions: int,
     ):
-        super().__init__(metric, selector, metric_threshold)
+        super().__init__(metric, selector)
         assert sector_divisions > 0
         self.sector_divisions = sector_divisions
         self.image_shape = (1, 1)
@@ -71,16 +71,14 @@ class SectorSuppression(CartesianProductSuppression):
         return sectors, dividing_lines
 
     def _handle_boundaries(
-        self,
-        bounding_boxes: NDArray[(Any, 2, 2), np.float64],
-        confidences: NDArray[(Any,), np.float64],
-        dividing_lines: List[Tuple[int, bool]],
-    ) -> Tuple[List[int], NDArray[(Any, 2, 2), np.int64], NDArray[(Any,), np.float64]]:
+            self,
+            bounding_box_array: BoundingBoxArray,
+            dividing_lines: List[Tuple[int, bool]],
+    ) -> BoundingBoxArray:
         """Finds all boxes overlapping boundaries. Performs selection on those boxes and any overlapping boxes.
 
         Args:
-            bounding_boxes: All of the bounding boxes in an image.
-            confidences: All of the associated confidences in an image.
+            bounding_box_array: The payload of the boxes, confidences, and labels.
             dividing_lines: The dividing_lines of each sector as determined by _create_sectors().
 
         Returns:
@@ -88,34 +86,34 @@ class SectorSuppression(CartesianProductSuppression):
             bounding_boxes: The original bounding boxes less any bounding boxes that were evaluated for selection.
             confidences: The original confidences less any confidences that were evaluated for selection.
         """
-        on_boundary = np.full(bounding_boxes.shape[0], False, np.bool)
-        all_bids = np.arange(0, bounding_boxes.shape[0])
+        on_boundary = np.full(bounding_box_array.bounding_boxes.shape[0], False, np.bool)
+        all_bids = np.arange(0, bounding_box_array.bounding_boxes.shape[0])
         for bid in all_bids:
             for line, divide_on_height in dividing_lines:
                 if (
                     divide_on_height
-                    and bounding_boxes[bid, 0, 0] < line < bounding_boxes[bid, 1, 0]
+                    and bounding_box_array.bounding_boxes[bid, 0, 0] <
+                        line <
+                        bounding_box_array.bounding_boxes[bid, 1, 0]
                 ):
                     on_boundary[bid] = True
                     break
                 elif (
                     not divide_on_height
-                    and bounding_boxes[bid, 0, 1] < line < bounding_boxes[bid, 1, 1]
+                    and bounding_box_array.bounding_boxes[bid, 0, 1] <
+                    line <
+                    bounding_box_array.bounding_boxes[bid, 1, 1]
                 ):
                     on_boundary[bid] = True
                     break
 
         prod = itertools.product(all_bids[on_boundary], all_bids)
-        selected_bids, evaluated_bids = self._evaluate_overlap(bounding_boxes, prod)
+        selected_bids, evaluated_bids = self._evaluate_overlap(bounding_box_array, prod)
         evaluated_bids = np.asarray(list(evaluated_bids), dtype=np.int64)
-        evaluated_bids_inv = np.ones(bounding_boxes.shape[0], np.bool)
+        evaluated_bids_inv = np.ones(bounding_box_array.bounding_boxes.shape[0], np.bool)
         evaluated_bids_inv[evaluated_bids] = 0
 
-        return (
-            selected_bids,
-            bounding_boxes[evaluated_bids_inv, :, :],
-            confidences[evaluated_bids_inv],
-        )
+        return bounding_box_array[np.asarray(selected_bids, dtype=np.int64)]
 
     @staticmethod
     def _in_sector(
@@ -171,40 +169,45 @@ class SectorSuppression(CartesianProductSuppression):
                     sector_bids.append(bid)
                     assigned_bids.add(bid)
             all_sector_bids.append(sector_bids)
+
+        assert sum([len(x) for x in all_sector_bids]) == bounding_boxes.shape[0]
         return all_sector_bids
 
     def transform(
-        self,
-        bounding_boxes: NDArray[(Any, 2, 2), np.float64],
-        confidences: NDArray[(Any,), np.float64],
-        *args,
-        **kwargs
-    ) -> Tuple[NDArray[(Any, 2, 2), np.float64], NDArray[(Any,), np.float64]]:
-        """See base class documentation.
-        """
+            self,
+            bounding_box_array: BoundingBoxArray,
+            *args,
+            **kwargs
+    ) -> BoundingBoxArray:
+        """See base class documentation."""
         image_sector = [
             np.array(((0, 0), self.image_shape), dtype=np.int64),
         ]
         sectors, dividing_lines = self._create_sectors(image_sector)
-        (
-            selected_bids,
-            filtered_bounding_boxes,
-            filtered_confidences,
-        ) = self._handle_boundaries(bounding_boxes, confidences, dividing_lines)
+        selected_bounding_box_arrays = [self._handle_boundaries(
+            bounding_box_array,
+            dividing_lines
+        )]
+        print("SELECTED BOUNDARY BOXES:")  # TODO: REMOVE
+        print(selected_bounding_box_arrays)  # TODO: REMOVE
 
-        selected_bounding_boxes = [bounding_boxes[selected_bids, :, :]]
-        selected_confidences = [confidences[selected_bids]]
-        all_sector_bids = self._assign_sectors(filtered_bounding_boxes, sectors)
+        all_sector_bids = self._assign_sectors(bounding_box_array.bounding_boxes, sectors)
+        # selected_bounding_box_arrays = []
         for sector_bids in all_sector_bids:
-            (
-                this_selected_bounding_boxes,
-                this_selected_confidences,
-            ) = self._cp_transform(
-                filtered_bounding_boxes[sector_bids, :, :], filtered_confidences[sector_bids]
+            assert isinstance(sector_bids, list)
+            selected_bounding_box_arrays.append(
+                self._cp_transform(bounding_box_array[np.asarray(sector_bids, dtype=np.int64)])
             )
-            selected_bounding_boxes.append(this_selected_bounding_boxes)
-            selected_confidences.append(this_selected_confidences)
-        return (
-            np.concatenate(selected_bounding_boxes, axis=0),
-            np.concatenate(selected_confidences, axis=0),
-        )
+        print("SELECTED ARRAYS")
+        print(selected_bounding_box_arrays)
+        print("LEN")
+        print(len(selected_bounding_box_arrays))
+        print("SHAPES")
+        print([x.bounding_boxes.shape for x in selected_bounding_box_arrays if x is not None])
+        print("SELECTED ARRAYS2")
+        print(concatenate(selected_bounding_box_arrays))
+        print("LEN2")
+        print(len(concatenate(selected_bounding_box_arrays)))
+        print("SHAPE2")
+        print(concatenate(selected_bounding_box_arrays).bounding_boxes.shape)
+        return concatenate(selected_bounding_box_arrays)

@@ -3,7 +3,7 @@
 import numpy as np  # type: ignore
 from typing import List  # type: ignore
 
-from base.selection.base import Selector  # type: ignore
+from od_toolbelt.nms.selection.base import Selector  # type: ignore
 
 
 class RandomSelector(Selector):
