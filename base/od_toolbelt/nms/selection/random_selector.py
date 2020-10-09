@@ -1,4 +1,4 @@
-# Copyright Michael Ayabarreno-Hernandez. All rights reserved.
+# Copyright 2020 Michael Hernandez
 
 import numpy as np  # type: ignore
 from typing import List  # type: ignore

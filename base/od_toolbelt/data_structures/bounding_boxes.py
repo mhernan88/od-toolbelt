@@ -1,3 +1,5 @@
+# Copyright 2020 Michael Hernandez
+
 import csv
 import json
 import numpy as np
@@ -471,6 +473,8 @@ def concatenate(bounding_box_arrays: List[BoundingBoxArray]):
 
     """
     bounding_box_arrays = [bb for bb in bounding_box_arrays if bb is not None]
+
+    # TODO: Remove tty except wrapper
     try:
         assert len(bounding_box_arrays) > 0
     except AssertionError:

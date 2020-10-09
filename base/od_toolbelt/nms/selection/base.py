@@ -1,3 +1,5 @@
+# Copyright 2020 Michael Hernandez
+
 from typing import List  # type: ignore
 
 

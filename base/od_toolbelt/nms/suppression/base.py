@@ -1,3 +1,5 @@
+# Copyright 2020 Michael Hernandez
+
 from __future__ import annotations
 
 from typing import Any, Tuple, List  # type: ignore

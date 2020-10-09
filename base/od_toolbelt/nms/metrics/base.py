@@ -1,3 +1,5 @@
+# Copyright 2020 Michael Hernandez
+
 import numpy as np
 from nptyping import NDArray
 from typing import Any
