@@ -346,7 +346,7 @@ to the select() method. A single identifier is returned.
 
 ## Roadmap
 1. Python code optimizations - ***In Progress***.
-2. Add consensus-based selector.
+2. Add consensus-based selector - ***In Progress***.
 3. Add additional selectors (e.g. first selector, average selector, median selector, etc.).
 4. Add additional metrics (e.g. IOU^2, etc.).
 5. Complete refactorization (version 0.1).
