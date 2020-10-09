@@ -1,2 +1,2 @@
 ignore:
-  - "base/od_toolbelt/tests/**/*.py"
+  - "base/tests/**/*.py"
