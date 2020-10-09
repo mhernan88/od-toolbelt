@@ -2,7 +2,6 @@
 
 import numpy as np  # type: ignore
 import itertools  # type: ignore
-from nptyping import NDArray  # type: ignore
 from typing import Any, List, Tuple, Iterator, Set, Optional, Union  # type: ignore
 
 from od_toolbelt.nms.metrics.base import Metric  # type: ignore
@@ -50,9 +49,22 @@ class CartesianProductSuppression(Suppressor):
             ],  # Replace with nested loop instead of CP
             symmetric: bool = False,
     ) -> Tuple[List[int], Set[int]]:
-        bounding_box_ids = [x for x in bounding_box_ids]  # TEMP
-        boundary_boudning_box_idsx = set([b[0] for b in bounding_box_ids])  # TEMP
-        all_boudning_box_idsx = set([b[1] for b in bounding_box_ids])  # TEMP
+        """For a given set of bounding boxes, this method applies cartesian product non-maximum suppression to them.
+
+        Args:
+            bounding_box_array: The payload of all bounding_boxes, confidences, and labels.
+            bounding_box_ids: A list of bounding box pairs to evaluate.
+            symmetric: True if bounding_box_ids is a True cartesian product (i.e. comparing each box against every
+                other box), otherwise False.
+
+        Returns:
+            selected_bids: A list of bounding_box_ids that were selected by our non-maximum suppression selector and
+                metric.
+            evaluated_bids: A list of bounding_box_ids that were evaluated in selection.
+        """
+        bounding_box_ids = [x for x in bounding_box_ids]  # TODO: Replace with optimized version.
+        boundary_boudning_box_idsx = set([b[0] for b in bounding_box_ids])  # TODO: Replace with optimized version.
+        all_boudning_box_idsx = set([b[1] for b in bounding_box_ids])  # TODO: Replace with optimized version.
         non_boundary_bounding_box_ids = all_boudning_box_idsx.difference(
             boundary_boudning_box_idsx
         )
@@ -81,8 +93,6 @@ class CartesianProductSuppression(Suppressor):
                 evaluated_bids.add(bids[0])
                 evaluated_bids.add(bids[1])
 
-                # no_overlap[bids[0]] = False
-                # no_overlap[bids[1]] = False
                 no_overlap[bounding_box_array.bounding_box_id_to_ix(bids[0])] = False
                 no_overlap[bounding_box_array.bounding_box_id_to_ix(bids[1])] = False
             last_bid = bids[0]
@@ -94,8 +104,6 @@ class CartesianProductSuppression(Suppressor):
             selected_bids.extend(no_overlap_boxes)
             evaluated_bids.update(selected_bids)
 
-        z = [str(x) for x in selected_bids]  # TODO: REMOVE
-        print(f"SELECTED BIDS2: {', '.join(z)}")  # TODO: REMOVE
         return selected_bids, evaluated_bids
 
     def _cp_transform(
@@ -119,35 +127,34 @@ class CartesianProductSuppression(Suppressor):
             bounding_box_array, bounding_box_ids_cp
         )
 
-        print(f"SELECTED BIDS ARE: {', '.join([str(x) for x in selected_bids])}")  # TODO: REMOVE
         return bounding_box_array[np.asarray(selected_bids, dtype=np.int64)]
 
-    def burst(
-        self,
-        bounding_box_burst: List[NDArray[(Any, 2, 2), np.float64]],
-        confidences_burst: List[NDArray[(Any,), np.float64]],
-        labels_burst: List[NDArray[(Any,), np.int64]],
-        *args,
-        **kwargs
-    ) -> Tuple[NDArray[(Any, 2, 2), np.float64], NDArray[(Any,), np.float64]]:
-        """See base class documentation."""
-        bounding_box = np.concatenate(bounding_box_burst, axis=0)
-        confidences = np.concatenate(confidences_burst, axis=0)
-        indexes = self.transform(bounding_box, confidences, labels_burst)
-        return bounding_box[indexes, :, :], confidences[indexes]
-
-    def batch(
-        self,
-        bounding_box_batch: List[List[NDArray[(Any, 2, 2), np.float64]]],
-        confidences_batch: List[List[NDArray[(Any,), np.float64]]],
-        labels_batch: List[List[NDArray[(Any,), np.int64]]],
-        *args,
-        **kwargs
-    ) -> List[Tuple[NDArray[(Any, 2, 2), np.float64], NDArray[(Any,), np.float64]]]:
-        """See base class documentation."""
-        return [
-            self.burst(bounding_box_burst, confidences_burst, labels_burst)
-            for bounding_box_burst, confidences_burst, labels_burst in zip(
-                bounding_box_batch, confidences_batch, labels_batch
-            )
-        ]
+    # def burst(
+    #     self,
+    #     bounding_box_burst: List[NDArray[(Any, 2, 2), np.float64]],
+    #     confidences_burst: List[NDArray[(Any,), np.float64]],
+    #     labels_burst: List[NDArray[(Any,), np.int64]],
+    #     *args,
+    #     **kwargs
+    # ) -> Tuple[NDArray[(Any, 2, 2), np.float64], NDArray[(Any,), np.float64]]:
+    #     """See base class documentation."""
+    #     bounding_box = np.concatenate(bounding_box_burst, axis=0)
+    #     confidences = np.concatenate(confidences_burst, axis=0)
+    #     indexes = self.transform(bounding_box, confidences, labels_burst)
+    #     return bounding_box[indexes, :, :], confidences[indexes]
+    #
+    # def batch(
+    #     self,
+    #     bounding_box_batch: List[List[NDArray[(Any, 2, 2), np.float64]]],
+    #     confidences_batch: List[List[NDArray[(Any,), np.float64]]],
+    #     labels_batch: List[List[NDArray[(Any,), np.int64]]],
+    #     *args,
+    #     **kwargs
+    # ) -> List[Tuple[NDArray[(Any, 2, 2), np.float64], NDArray[(Any,), np.float64]]]:
+    #     """See base class documentation."""
+    #     return [
+    #         self.burst(bounding_box_burst, confidences_burst, labels_burst)
+    #         for bounding_box_burst, confidences_burst, labels_burst in zip(
+    #             bounding_box_batch, confidences_batch, labels_batch
+    #         )
+    #     ]

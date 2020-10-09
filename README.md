@@ -14,8 +14,8 @@ detection workflow to boost performance.
 
 Modules:
 - Suppressors: Different non-maximum suppression methodologies to select from.
-- Selectors: A modular way to create selection logic for image suppression.
-- Metrics: A modular way to create measures of bounding box overlap.
+- Selectors: A modular way to create selection logic for image suppression. See base/od_toolbelt/nms/selectors/README.md for more information on available selectors.
+- Metrics: A modular way to create measures of bounding box overlap. See base/od_toolbelt/nms/metrics/README.md for more information on available metrics.
 
 ## Concept
 

@@ -188,26 +188,11 @@ class SectorSuppression(CartesianProductSuppression):
             bounding_box_array,
             dividing_lines
         )]
-        print("SELECTED BOUNDARY BOXES:")  # TODO: REMOVE
-        print(selected_bounding_box_arrays)  # TODO: REMOVE
 
         all_sector_bids = self._assign_sectors(bounding_box_array.bounding_boxes, sectors)
-        # selected_bounding_box_arrays = []
         for sector_bids in all_sector_bids:
             assert isinstance(sector_bids, list)
             selected_bounding_box_arrays.append(
                 self._cp_transform(bounding_box_array[np.asarray(sector_bids, dtype=np.int64)])
             )
-        print("SELECTED ARRAYS")
-        print(selected_bounding_box_arrays)
-        print("LEN")
-        print(len(selected_bounding_box_arrays))
-        print("SHAPES")
-        print([x.bounding_boxes.shape for x in selected_bounding_box_arrays if x is not None])
-        print("SELECTED ARRAYS2")
-        print(concatenate(selected_bounding_box_arrays))
-        print("LEN2")
-        print(len(concatenate(selected_bounding_box_arrays)))
-        print("SHAPE2")
-        print(concatenate(selected_bounding_box_arrays).bounding_boxes.shape)
         return concatenate(selected_bounding_box_arrays)
