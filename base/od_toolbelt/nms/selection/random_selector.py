@@ -17,6 +17,6 @@ class RandomSelector(Selector):
             bids: The box ids you wish to consider.
 
         Returns:
-            A signle box id from the bids argument.
+            A single box id from the bids argument.
         """
         return np.random.choice(bids)

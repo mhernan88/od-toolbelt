@@ -1,7 +1,5 @@
 # Copyright 2020 Michael Hernandez
 
-from __future__ import annotations  # type: ignore
-
 import itertools  # type: ignore
 import numpy as np  # type: ignore
 from nptyping import NDArray  # type: ignore
