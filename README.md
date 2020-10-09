@@ -114,7 +114,7 @@ python setup.py install
 
 The first step is to get some bounding box predictions to process. All bounding boxes
  must be measured in relative coordinates (i.e. scaled from 0 to 1). In this example, 
- we will be creating four bounding boxes.
+ we will be creating four bounding boxes. Note that all labels have already been encoded.
 ```python
 import numpy as np
 boxes = np.array((
@@ -125,6 +125,8 @@ boxes = np.array((
 ))
 
 confidences = np.array((0.65, 0.89, 0.70, 0.14))
+
+labels = np.array((0, 1, 1, 1))
 ```
 
 In this example, we'll be simulating having multiple ("n_boxes") overlapping bounding boxes by
@@ -134,6 +136,7 @@ n_boxes = 5  # The number of boxes to simulate per original box.
 std = 0.005  # The standard deviation for normal random sampling.
 new_boxes = []
 new_confidences = []
+new_labels = []
 for i in range(n_boxes):
     for j in range(boxes.shape[0]):
         print(f"Adding new box {i} around existing box {j}")
@@ -144,7 +147,8 @@ for i in range(n_boxes):
         new_box = np.array(((new_box_pt1_x, new_box_pt1_y), (new_box_pt2_x, new_box_pt2_y)), dtype=np.float64)
         new_boxes.append(new_box)
         new_confidence = confidences[j] + np.random.uniform(-0.1, 0.1)
-        confidences.append(new_confidence)
+        new_confidences.append(new_confidence)
+        new_labels.append(labels[j])
 
 new_boxes.append(boxes)
 boxes = np.concatenate(new_boxes, axis = 0)
@@ -155,6 +159,7 @@ non-maximum suppression algorithm. Here, we are filtering out the bounding boxes
 ```python
 confidence_threshold = 0.5
 confidences = confidences[confidences > confidence_threshold]
+labels = labels[confidences > confidence_threshold]
 boxes = boxes[confidences > confidence_threshold]
 ```
 
@@ -162,32 +167,36 @@ Now that we have a set of boxes to run out non-maximum suppression algorithm on,
 our metric and selector. We can then pass those onto our suppression algorithm, along with our iou_threshold value.
 Once we have an instance of our suppression algorithm, we run the transform() method to apply non-maximum suppression.
 ```python
-from metrics.iou import DefaultIntersectionOverTheUnion
-from selection.random_selector import RandomSelector
-from suppression.cartesian_product_suppression import CartesianProductSuppression
+import od_toolbelt as od
 
-metric = DefaultIntersectionOverTheUnion()
-selector = RandomSelector()
+# All values with intersection over the union of 0.25 or less will be considered separate boxes.
+METRIC_THRESHOLD = 0.25
 
-iou_threshold = 0.15
-nms = CartesianProductSuppression(
-    metric=metric, selector=selector, metric_threshold=iou_threshold
+metric = od.nms.metrics.DefaultIntersectionOverTheUnion(threshold=0.25, direction="lte")
+selector = od.nms.selection.RandomSelector()
+
+nms = od.nms.suppression.CartesianProductSuppression(
+    metric=metric, selector=selector
 )
 
-filtered_boxes, filtered_confidences = nms.transform(boxes, confidences)
+data_payload = od.BoundingBoxArray(
+    bounding_boxes=boxes,
+    confidences=confidences,
+    labels=labels,
+)
+
+resulting_payload = nms.transform(data_payload)
 ```
 
 Alternatively, we can use other non-maximum suppression algorithms, such as the SectorSuppression algorithm. We can
 runt he same transform() method.
 ```python
-from suppression.sector_suppression import SectorSuppression
-
 sector_divisions = 1
-nms = SectorSuppression(
-    metric=metric, selector=selector, metric_threshold=iou_threshold, sector_divisions=sector_divisions
+nms = od.nms.suppression.SectorSuppression(
+    metric=metric, selector=selector, sector_divisions=sector_divisions
 )
 
-filtered_boxes, filtered_confidences = nms.transform(boxes, confidences)
+resulting_payload = nms.transform(data_payload)
 ```
 
 Also, note that the metric and selector can be changed out for others (or use-defined metrics and selectors).
