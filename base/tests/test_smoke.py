@@ -1,5 +1,3 @@
-import numpy as np
-
 from od_toolbelt import BoundingBoxArray
 from od_toolbelt.nms.suppression import CartesianProductSuppression, SectorSuppression
 

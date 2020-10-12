@@ -27,11 +27,7 @@ class Suppressor:
             bounding_box_array: BoundingBoxArray,
             *args,
             **kwargs,
-    ) -> Tuple[
-        NDArray[(Any, 2, 2), np.float64],
-        NDArray[(Any,), np.float64],
-        NDArray[(Any,), np.int64],
-    ]:
+    ) -> BoundingBoxArray:
         """A method that filters down the amount of bounding boxes of an image
 
         Args:

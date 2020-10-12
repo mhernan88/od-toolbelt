@@ -349,7 +349,7 @@ to the select() method. A single identifier is returned.
 2. Add consensus-based selector - ***In Progress***.
 3. Add additional selectors (e.g. first selector, average selector, median selector, etc.).
 4. Add additional metrics (e.g. IOU^2, etc.).
-5. Complete refactorization (version 0.1).
+5. Complete refactorization (version 0.2).
 6. Create PyPi package.
 7. Convert codebase to optimized Cython.
 8. Add soft-NMS as an option.

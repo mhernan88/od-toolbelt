@@ -2,7 +2,7 @@
 
 import numpy as np  # type: ignore
 import itertools  # type: ignore
-from typing import Any, List, Tuple, Iterator, Set, Optional, Union  # type: ignore
+from typing import Any, List, Tuple, Iterator, Set, Optional  # type: ignore
 
 from od_toolbelt.nms.metrics.base import Metric  # type: ignore
 from od_toolbelt.nms.selection.base import Selector  # type: ignore
