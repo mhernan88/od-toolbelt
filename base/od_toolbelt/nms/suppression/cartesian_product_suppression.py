@@ -29,25 +29,18 @@ class CartesianProductSuppression(Suppressor):
         super().__init__(metric, selector)
 
     def transform(
-            self,
-            bounding_box_array: BoundingBoxArray,
-            *args,
-            **kwargs
+        self, bounding_box_array: BoundingBoxArray, *args, **kwargs
     ) -> BoundingBoxArray:
         """A wrapper for cp_transform."""
-        return self._cp_transform(
-            bounding_box_array,
-            *args,
-            **kwargs
-        )
+        return self._cp_transform(bounding_box_array, *args, **kwargs)
 
     def _evaluate_overlap(
         self,
-            bounding_box_array: BoundingBoxArray,
-            bounding_box_ids: Iterator[
-                Tuple[Any, Any]
-            ],  # Replace with nested loop instead of CP
-            symmetric: bool = False,
+        bounding_box_array: BoundingBoxArray,
+        bounding_box_ids: Iterator[
+            Tuple[Any, Any]
+        ],  # TODO: Replace with nested loop instead of CP
+        symmetric: bool = False,
     ) -> Tuple[List[int], Set[int]]:
         """For a given set of bounding boxes, this method applies cartesian product non-maximum suppression to them.
 
@@ -62,17 +55,26 @@ class CartesianProductSuppression(Suppressor):
                 metric.
             evaluated_bids: A list of bounding_box_ids that were evaluated in selection.
         """
-        bounding_box_ids = [x for x in bounding_box_ids]  # TODO: Replace with optimized version.
-        boundary_boudning_box_idsx = set([b[0] for b in bounding_box_ids])  # TODO: Replace with optimized version.
-        all_boudning_box_idsx = set([b[1] for b in bounding_box_ids])  # TODO: Replace with optimized version.
-        non_boundary_bounding_box_ids = all_boudning_box_idsx.difference(
+        bounding_box_ids = [
+            x for x in bounding_box_ids
+        ]  # TODO: Replace with optimized version.
+        print(f"NEW BOUNDING BOX IDS: {bounding_box_ids}")
+        boundary_boudning_box_idsx = set(
+            [b[0] for b in bounding_box_ids]
+        )  # TODO: Replace with optimized version.
+        all_bounding_box_idsx = set(
+            [b[1] for b in bounding_box_ids]
+        )  # TODO: Replace with optimized version.
+        non_boundary_bounding_box_ids = all_bounding_box_idsx.difference(
             boundary_boudning_box_idsx
         )
 
         selected_bids = []
         complementary_bids = []
         evaluated_bids = set()
-        no_overlap = np.full(bounding_box_array.bounding_boxes.shape[0], True, dtype=np.bool)
+        no_overlap = np.full(
+            bounding_box_array.bounding_boxes.shape[0], True, dtype=np.bool
+        )
         last_bid = -1
 
         empty = True
@@ -84,9 +86,9 @@ class CartesianProductSuppression(Suppressor):
             if (
                 (bids[1] not in evaluated_bids)
                 and (bids[0] != bids[1])
-                and not self.metric.within_range(
-                    bounding_box_array.lookup_box(bids[0]),
-                    bounding_box_array.lookup_box(bids[1])
+                and self.metric.overlap(
+                    bounding_box_array.lookup_box(int(bids[0])),
+                    bounding_box_array.lookup_box(int(bids[1])),
                 )
             ):
                 complementary_bids.append(bids[1])
@@ -104,13 +106,19 @@ class CartesianProductSuppression(Suppressor):
             selected_bids.extend(no_overlap_boxes)
             evaluated_bids.update(selected_bids)
 
-        return selected_bids, evaluated_bids
+        print(f"RETURNING {len(selected_bids)} BIDS")
+        return (
+            np.add(
+                np.asarray(selected_bids, np.int64), np.min(list(all_bounding_box_idsx))
+            ),
+            np.add(
+                np.asarray(list(evaluated_bids), np.int64),
+                np.min(list(all_bounding_box_idsx)),
+            ),
+        )
 
     def _cp_transform(
-            self,
-            bounding_box_array: Optional[BoundingBoxArray],
-            *args,
-            **kwargs
+        self, bounding_box_array: Optional[BoundingBoxArray], *args, **kwargs
     ) -> Optional[BoundingBoxArray]:
         """See base class documentation for transform().
 

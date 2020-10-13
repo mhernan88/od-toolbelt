@@ -9,7 +9,7 @@ import od_toolbelt as od  # type: ignore
 
 random.seed(7171)
 
-IOU_THRESHOLD = 0.01
+IOU_THRESHOLD = 0.001
 LOGGER = logging.getLogger()
 
 
@@ -25,17 +25,16 @@ def run_test_end_to_end_cp_nms(n_boxes: int):
     )
 
     data_payload = od.BoundingBoxArray(
-        bounding_boxes=bounding_boxes,
-        confidences=confidences,
-        labels=labels
+        bounding_boxes=bounding_boxes, confidences=confidences, labels=labels
     )
 
-    iou_metric = od.nms.metrics.DefaultIntersectionOverTheUnion(threshold=IOU_THRESHOLD, direction="lte")
+    iou_metric = od.nms.metrics.DefaultIntersectionOverTheUnion(
+        threshold=IOU_THRESHOLD, direction="gte"
+    )
     random_selector = od.nms.selection.RandomSelector()
 
     suppressor = od.nms.suppression.CartesianProductSuppression(
-        metric=iou_metric,
-        selector=random_selector
+        metric=iou_metric, selector=random_selector
     )
 
     filtered_boxes = suppressor.transform(bounding_box_array=data_payload)
@@ -55,18 +54,16 @@ def run_test_end_to_end_sb_nms(n_boxes: int):
     )
 
     data_payload = od.BoundingBoxArray(
-        bounding_boxes=bounding_boxes,
-        confidences=confidences,
-        labels=labels
+        bounding_boxes=bounding_boxes, confidences=confidences, labels=labels
     )
 
-    iou_metric = od.nms.metrics.DefaultIntersectionOverTheUnion(threshold=IOU_THRESHOLD, direction="lte")
+    iou_metric = od.nms.metrics.DefaultIntersectionOverTheUnion(
+        threshold=IOU_THRESHOLD, direction="gte"
+    )
     random_selector = od.nms.selection.RandomSelector()
 
     suppressor = od.nms.suppression.SectorSuppression(
-        metric=iou_metric,
-        selector=random_selector,
-        sector_divisions=1
+        metric=iou_metric, selector=random_selector, sector_divisions=1
     )
 
     filtered_boxes = suppressor.transform(bounding_box_array=data_payload)

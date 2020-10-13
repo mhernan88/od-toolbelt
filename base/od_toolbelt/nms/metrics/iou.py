@@ -18,9 +18,7 @@ class DefaultIntersectionOverTheUnion(Metric):
         super().__init__(threshold, direction)
 
     @staticmethod
-    def area(
-            bounding_box: NDArray[(2, 2), np.float64]
-    ) -> float:
+    def area(bounding_box: NDArray[(2, 2), np.float64]) -> float:
         """Calculates the area of a bounding box.
 
         Args:
@@ -29,14 +27,13 @@ class DefaultIntersectionOverTheUnion(Metric):
         Returns:
             The area of the bounding box.
         """
-        return (bounding_box[1, 0] - bounding_box[0, 0]) * (bounding_box[1, 1] - bounding_box[0, 1])
+        return (bounding_box[1, 0] - bounding_box[0, 0]) * (
+            bounding_box[1, 1] - bounding_box[0, 1]
+        )
 
     def area_many(
-            self,
-            bounding_boxes: NDArray[(Any, 2, 2), np.float64]
-    ) -> NDArray[
-        (Any,), np.float64
-    ]:
+        self, bounding_boxes: NDArray[(Any, 2, 2), np.float64]
+    ) -> NDArray[(Any,), np.float64]:
         """Calculates the area of multiple bounding boxes.
 
         Args:
@@ -53,8 +50,8 @@ class DefaultIntersectionOverTheUnion(Metric):
 
     @staticmethod
     def contains(
-            bounding_box1: NDArray[(2, 2), np.float64],
-            bounding_box2: NDArray[(2, 2), np.float64]
+        bounding_box1: NDArray[(2, 2), np.float64],
+        bounding_box2: NDArray[(2, 2), np.float64],
     ) -> bool:
         """Determines whether a bounding box is fully contained by another bounding box.
 
@@ -65,17 +62,18 @@ class DefaultIntersectionOverTheUnion(Metric):
         Returns:
             True if bounding_box1 fully contains bounding_box2, otherwise False.
         """
-        contains_flag = \
-            bounding_box1[0, 0] >= bounding_box2[0, 0] and \
-            bounding_box1[0, 1] >= bounding_box2[0, 1] and \
-            bounding_box1[1, 0] <= bounding_box2[1, 0] and \
-            bounding_box1[1, 1] <= bounding_box2[1, 1]
+        contains_flag = (
+            bounding_box1[0, 0] >= bounding_box2[0, 0]
+            and bounding_box1[0, 1] >= bounding_box2[0, 1]
+            and bounding_box1[1, 0] <= bounding_box2[1, 0]
+            and bounding_box1[1, 1] <= bounding_box2[1, 1]
+        )
         return contains_flag
 
     def intersection(
-            self,
-            bounding_box1: NDArray[(2, 2), np.float64],
-            bounding_box2: NDArray[(2, 2), np.float64]
+        self,
+        bounding_box1: NDArray[(2, 2), np.float64],
+        bounding_box2: NDArray[(2, 2), np.float64],
     ) -> float:
         """Calculates the intersection (i.e. the overlapping area) of two overlapping boxes.
 
@@ -87,10 +85,10 @@ class DefaultIntersectionOverTheUnion(Metric):
             The resulting intersection value.
         """
         if (
-            bounding_box2[0, 0] >= bounding_box1[1, 0] or
-            bounding_box1[0, 0] >= bounding_box2[1, 0] or
-            bounding_box2[0, 1] >= bounding_box1[1, 1] or
-            bounding_box1[0, 1] >= bounding_box2[1, 1]
+            bounding_box2[0, 0] >= bounding_box1[1, 0]
+            or bounding_box1[0, 0] >= bounding_box2[1, 0]
+            or bounding_box2[0, 1] >= bounding_box1[1, 1]
+            or bounding_box1[0, 1] >= bounding_box2[1, 1]
         ):
             # If boxes don't overlap, then return 0.0 intersection value.
             return 0.0
@@ -104,17 +102,15 @@ class DefaultIntersectionOverTheUnion(Metric):
             return 1.0
 
         common_pt1 = np.max((bounding_box1[0, :], bounding_box2[0, :]), axis=0)
-        common_pt2 = np.max((bounding_box1[1, :], bounding_box2[1, :]), axis=0)
+        common_pt2 = np.min((bounding_box1[1, :], bounding_box2[1, :]), axis=0)
         wh = np.abs(np.subtract(common_pt2, common_pt1))
         return np.product(wh)
 
     def intersection_many(
-            self,
-            bounding_boxes1: NDArray[(Any, 2, 2), np.float64],
-            bounding_boxes2: NDArray[(Any, 2, 2), np.float64],
-    ) -> NDArray[
-        (Any,), np.float64
-    ]:
+        self,
+        bounding_boxes1: NDArray[(Any, 2, 2), np.float64],
+        bounding_boxes2: NDArray[(Any, 2, 2), np.float64],
+    ) -> NDArray[(Any,), np.float64]:
         """Calculates the intersection of multiple pairs of boxes.
 
         Args:
@@ -127,13 +123,15 @@ class DefaultIntersectionOverTheUnion(Metric):
         # TODO: Optimize
         intersections = np.zeros(bounding_boxes1.shape[0])
         for i in np.arange(0, bounding_boxes1.shape[0]):
-            intersections[i] = self.intersection(bounding_boxes1[i, :, :], bounding_boxes2[i, :, :])
+            intersections[i] = self.intersection(
+                bounding_boxes1[i, :, :], bounding_boxes2[i, :, :]
+            )
         return intersections
 
     def union(
-            self,
-            bounding_box1: NDArray[(2, 2), np.float64],
-            bounding_box2: NDArray[(2, 2), np.float64]
+        self,
+        bounding_box1: NDArray[(2, 2), np.float64],
+        bounding_box2: NDArray[(2, 2), np.float64],
     ) -> float:
         """Calculates the union (i.e. the overlapping and non-overlapping area) of two overlapping boxes.
 
@@ -150,12 +148,10 @@ class DefaultIntersectionOverTheUnion(Metric):
         return np.abs(box1_area + box2_area - overlap_area)
 
     def union_many(
-            self,
-            bounding_boxes1: NDArray[(Any, 2, 2), np.float64],
-            bounding_boxes2: NDArray[(Any, 2, 2), np.float64]
-    ) -> NDArray[
-        (Any,), np.float64
-    ]:
+        self,
+        bounding_boxes1: NDArray[(Any, 2, 2), np.float64],
+        bounding_boxes2: NDArray[(Any, 2, 2), np.float64],
+    ) -> NDArray[(Any,), np.float64]:
         """Calculates the union of multiple pairs of boxes.
 
         Args:
@@ -172,9 +168,9 @@ class DefaultIntersectionOverTheUnion(Metric):
         return unions
 
     def compute(
-            self,
-            bounding_box1: NDArray[(2, 2), np.float64],
-            bounding_box2: NDArray[(2, 2), np.float64],
+        self,
+        bounding_box1: NDArray[(2, 2), np.float64],
+        bounding_box2: NDArray[(2, 2), np.float64],
     ) -> float:
         """Computes intersection over the union for a single box.
 
@@ -193,9 +189,9 @@ class DefaultIntersectionOverTheUnion(Metric):
         )
 
     def compute_many(
-            self,
-            bounding_boxes1: NDArray[(Any, 2, 2), np.float64],
-            bounding_boxes2: NDArray[(Any, 2, 2), np.float64],
+        self,
+        bounding_boxes1: NDArray[(Any, 2, 2), np.float64],
+        bounding_boxes2: NDArray[(Any, 2, 2), np.float64],
     ) -> NDArray[(Any,), np.float64]:
         """Computes intersection over the union for multiple boxes.
 

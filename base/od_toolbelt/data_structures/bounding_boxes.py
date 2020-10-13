@@ -19,11 +19,11 @@ class BoundingBoxArray:
     }
 
     def __init__(
-            self,
-            bounding_boxes: NDArray[(Any, 2, 2), np.float64],
-            confidences: NDArray[(Any,), np.float64],
-            labels: NDArray[(Any,), np.int64],
-            bounding_box_ids: Optional[NDArray[(Any,), np.int64]] = None,
+        self,
+        bounding_boxes: NDArray[(Any, 2, 2), np.float64],
+        confidences: NDArray[(Any,), np.float64],
+        labels: NDArray[(Any,), np.int64],
+        bounding_box_ids: Optional[NDArray[(Any,), np.int64]] = None,
     ):
         if isinstance(bounding_boxes, tuple):
             bounding_boxes = np.asarray(bounding_boxes, dtype=np.float64)
@@ -46,15 +46,12 @@ class BoundingBoxArray:
         else:
             self.bounding_box_ids = bounding_box_ids
 
-    def __getitem__(
-            self,
-            item: NDArray[(Any,), np.int64]
-    ):
+    def __getitem__(self, item: NDArray[(Any,), np.int64]):
+        assert isinstance(item, np.ndarray)
         if item.shape[0] == 0:
             return None
         # TODO: Optimize loop over self.bounding_box_ids
         ixs = [True if bid in item else False for bid in self.bounding_box_ids]
-
         new_bounding_box_array = BoundingBoxArray(
             bounding_boxes=self.bounding_boxes[ixs, :, :],
             confidences=self.confidences[ixs],
@@ -65,29 +62,23 @@ class BoundingBoxArray:
 
         return new_bounding_box_array
 
-    def __iter__(
-            self
-    ):
+    def __iter__(self):
         for i in np.arange(0, self.bounding_boxes.shape[0]):
             yield i, self.bounding_boxes[i, :, :], self.confidences[i], self.labels[i]
 
-    def __len__(
-            self
-    ):
+    def __len__(self):
         return self.bounding_boxes.shape[0]
 
-    def __str__(
-            self
-    ):
+    def __str__(self):
         ids = ", ".join([str(x) for x in self.bounding_box_ids.tolist()])
         return f"A bounding box array with ids: {ids}"
 
     def _check_values_and_update(
-            self,
-            bounding_boxes: NDArray[(Any, 2, 2), np.float64],
-            confidences: NDArray[(Any,), np.float64],
-            labels: NDArray[(Any,), np.int64],
-            bounding_box_ids: NDArray[(Any,), np.int64],
+        self,
+        bounding_boxes: NDArray[(Any, 2, 2), np.float64],
+        confidences: NDArray[(Any,), np.float64],
+        labels: NDArray[(Any,), np.int64],
+        bounding_box_ids: NDArray[(Any,), np.int64],
     ):
         bounding_boxes = np.asarray(bounding_boxes, dtype=np.float64)
         confidences = np.asarray(confidences, dtype=np.float64)
@@ -103,11 +94,7 @@ class BoundingBoxArray:
         self.labels = labels
         self.bounding_box_ids = bounding_box_ids
 
-    def to_dict(
-            self
-    ) -> List[
-        Dict[str, Union[float, int, Dict[str, float]]]
-    ]:
+    def to_dict(self) -> List[Dict[str, Union[float, int, Dict[str, float]]]]:
         bounding_boxes = []
         for i in np.arange(0, self.bounding_boxes.shape[0]):
             label = self.labels[i]
@@ -184,18 +171,14 @@ class BoundingBoxArray:
             bounding_boxes, confidences, labels, bounding_box_ids
         )
 
-    def from_json(
-            self,
-            filename: str,
-            ignore_incoming_tag_ids: bool
-    ):
+    def from_json(self, filename: str, ignore_incoming_tag_ids: bool):
         with open(filename, "r") as f:
             payload = json.load(f)
         self.from_dict(payload, ignore_incoming_tag_ids)
 
     def to_json(
-            self,
-            filename: str,
+        self,
+        filename: str,
     ):
         with open(filename, "w") as f:
             json.dump(self.to_dict(), f)
@@ -245,24 +228,20 @@ class BoundingBoxArray:
             )
             writer.writerows(rows)
 
-    def bounding_box_id_to_ix(
-            self,
-            bid: int
-    ):
+    def bounding_box_id_to_ix(self, bid: int):
         return np.argwhere(self.bounding_box_ids == int(bid))
 
-    def lookup_box(
-            self,
-            bid: int
-    ):
-        box = self.bounding_boxes[self.bounding_box_ids == int(bid), :, :][0]
+    def lookup_box(self, bid: int) -> NDArray[(2, 2), np.float64]:
+        assert isinstance(bid, int)
+        assert bid in self.bounding_box_ids
+        box = self.bounding_boxes[
+            self.bounding_box_ids == np.array((bid,), dtype=np.int64), :, :
+        ][0]
         assert len(box.shape) == 2
         return box
 
     def _check_numpy_warning(
-            self,
-            variable_label: str,
-            options: Union[Iterator[str], Iterator[np.dtype]]
+        self, variable_label: str, options: Union[Iterator[str], Iterator[np.dtype]]
     ):
         text = f"In BoundingBoxesArray.check(), {variable_label} dtype is not "
         options = [opt if isinstance(opt, str) else self.dtypes[opt] for opt in options]
@@ -278,7 +257,9 @@ class BoundingBoxArray:
         try:
             assert self.bounding_boxes.shape[0] == self.confidences.shape[0]
         except AssertionError:
-            raise ValueError(f"{prefix} self.confidences (len={self.confidences.shape[0]})")
+            raise ValueError(
+                f"{prefix} self.confidences (len={self.confidences.shape[0]})"
+            )
 
         try:
             assert self.bounding_boxes.shape[0] == self.labels.shape[0]
@@ -288,7 +269,9 @@ class BoundingBoxArray:
         try:
             assert self.bounding_boxes.shape[0] == self.bounding_box_ids.shape[0]
         except AssertionError:
-            raise ValueError(f"{prefix} self.bounding_box_ids (len={self.bounding_box_ids.shape[0]})")
+            raise ValueError(
+                f"{prefix} self.bounding_box_ids (len={self.bounding_box_ids.shape[0]})"
+            )
 
     def append(
         self,
@@ -316,18 +299,20 @@ class BoundingBoxArray:
             if isinstance(bounding_box_id, int):
                 bounding_box_id = np.array((bounding_box_id,), dtype=np.int64)
         else:
-            bounding_box_id = np.array((np.max(self.bounding_box_ids) + 1,), dtype=np.int64)
+            bounding_box_id = np.array(
+                (np.max(self.bounding_box_ids) + 1,), dtype=np.int64
+            )
         self.bounding_box_ids = np.append(
             self.bounding_box_ids, bounding_box_id, axis=0
         )
         self.check_lengths()
 
     def _check_new(
-            self,
-            valid_floats: Tuple,
-            bounding_box: Optional[NDArray[(2, 2), np.float64]] = None,
-            confidence: Optional[float] = None,
-            label: Optional[int] = None,
+        self,
+        valid_floats: Tuple,
+        bounding_box: Optional[NDArray[(2, 2), np.float64]] = None,
+        confidence: Optional[float] = None,
+        label: Optional[int] = None,
     ):
         prefix = "In BoundingBoxArray._check_new(),"
         if bounding_box is not None:
@@ -342,16 +327,12 @@ class BoundingBoxArray:
             try:
                 assert np.all(bounding_box >= 0)
             except AssertionError:
-                raise ValueError(
-                    f"{prefix} bounding_box had values < 0"
-                )
+                raise ValueError(f"{prefix} bounding_box had values < 0")
 
             try:
                 assert np.all(bounding_box <= 1)
             except AssertionError:
-                raise ValueError(
-                    f"{prefix} bounding_box had values > 1"
-                )
+                raise ValueError(f"{prefix} bounding_box had values > 1")
 
             try:
                 assert len(bounding_box.shape) == 2
@@ -385,8 +366,10 @@ class BoundingBoxArray:
         try:
             assert isinstance(self.bounding_boxes, np.ndarray)
         except AssertionError:
-            raise ValueError(f"{prefix} self.bounding_boxes was the wrong type: "
-                             f"expected=np.ndarray, actual={type(self.bounding_boxes)}")
+            raise ValueError(
+                f"{prefix} self.bounding_boxes was the wrong type: "
+                f"expected=np.ndarray, actual={type(self.bounding_boxes)}"
+            )
 
         try:
             assert np.all(self.bounding_boxes >= 0)
@@ -401,20 +384,26 @@ class BoundingBoxArray:
         try:
             assert len(self.bounding_boxes.shape) == 3
         except AssertionError:
-            raise ValueError(f"{prefix} self.bounding_boxes had wrong number of dimensions: "
-                             f"expected=3, actual={len(self.bounding_boxes.shape)}")
+            raise ValueError(
+                f"{prefix} self.bounding_boxes had wrong number of dimensions: "
+                f"expected=3, actual={len(self.bounding_boxes.shape)}"
+            )
 
         try:
             assert self.bounding_boxes.shape[1] == 2
         except AssertionError:
-            raise ValueError(f"{prefix} self.bounding_boxes had wrong shape for dimension 1 (starting at 0): "
-                             f"expected=2, actual={self.bounding_boxes.shape[1]}")
+            raise ValueError(
+                f"{prefix} self.bounding_boxes had wrong shape for dimension 1 (starting at 0): "
+                f"expected=2, actual={self.bounding_boxes.shape[1]}"
+            )
 
         try:
             assert self.bounding_boxes.shape[2] == 2
         except AssertionError:
-            raise ValueError(f"{prefix} self.bounding_boxes had wrong shape for dimension 2 (starting at 0): "
-                             f"expected=2, actual={self.bounding_boxes.shape[2]}")
+            raise ValueError(
+                f"{prefix} self.bounding_boxes had wrong shape for dimension 2 (starting at 0): "
+                f"expected=2, actual={self.bounding_boxes.shape[2]}"
+            )
 
         if self.bounding_boxes.dtype not in valid_floats:
             self._check_numpy_warning("self.bounding_boxes", valid_floats)
@@ -422,14 +411,18 @@ class BoundingBoxArray:
         try:
             assert isinstance(self.confidences, np.ndarray)
         except AssertionError:
-            raise ValueError(f"{prefix} self.confidences had wrong type: "
-                             f"expected=np.ndarray, actual={type(self.confidences)}")
+            raise ValueError(
+                f"{prefix} self.confidences had wrong type: "
+                f"expected=np.ndarray, actual={type(self.confidences)}"
+            )
 
         try:
             assert len(self.confidences.shape) == 1
         except AssertionError:
-            raise ValueError(f"{prefix} self.confidences had wrong number of dimensions: "
-                             f"expected=1, actual={len(self.confidences.shape)}")
+            raise ValueError(
+                f"{prefix} self.confidences had wrong number of dimensions: "
+                f"expected=1, actual={len(self.confidences.shape)}"
+            )
 
         if self.confidences.dtype not in valid_floats:
             self._check_numpy_warning("self.confidences", valid_floats)
@@ -437,14 +430,18 @@ class BoundingBoxArray:
         try:
             assert isinstance(self.labels, np.ndarray)
         except AssertionError:
-            raise ValueError(f"{prefix} self.labels had wrong type: "
-                             f"expected=np.ndarray, actual={type(self.labels)}")
+            raise ValueError(
+                f"{prefix} self.labels had wrong type: "
+                f"expected=np.ndarray, actual={type(self.labels)}"
+            )
 
         try:
             assert len(self.labels.shape) == 1
         except AssertionError:
-            raise ValueError(f"{prefix} self.labels had wrong number of dimensions: "
-                             f"expected=1, actual={len(self.labels.shape)}")
+            raise ValueError(
+                f"{prefix} self.labels had wrong number of dimensions: "
+                f"expected=1, actual={len(self.labels.shape)}"
+            )
 
         if self.labels.dtype not in valid_ints:
             self._check_numpy_warning("self.labels", valid_ints)
@@ -474,10 +471,10 @@ def concatenate(bounding_box_arrays: List[BoundingBoxArray]):
     """
     bounding_box_arrays = [bb for bb in bounding_box_arrays if bb is not None]
 
-    try:
-        assert len(bounding_box_arrays) > 0
-    except AssertionError:
-        ValueError("In concatenate(), bounding_box_arrays had length of 0 (greater than 0 was expected)")
+    if len(bounding_box_arrays) == 0:
+        raise ValueError(
+            "In concatenate(), bounding_box_arrays had length of 0 (greater than 0 was expected)"
+        )
     output = bounding_box_arrays[0]
     for ix, bounding_box_array in enumerate(bounding_box_arrays):
         if ix == 0:
@@ -491,12 +488,32 @@ def concatenate(bounding_box_arrays: List[BoundingBoxArray]):
             new_bounding_boxes = bounding_box_array.bounding_boxes
             new_confidences = bounding_box_array.confidences
             new_labels = bounding_box_array.labels
-            new_bounding_box_ids = bounding_box_array.bounding_box_ids
+
+            if np.min(bounding_box_array.bounding_box_ids) <= np.max(
+                old_bounding_box_ids
+            ):
+                new_bounding_box_ids = (
+                    bounding_box_array.bounding_box_ids
+                    + np.max(old_bounding_box_ids)
+                    + 1
+                )
+            else:
+                new_bounding_box_ids = bounding_box_array.bounding_box_ids
 
             output = BoundingBoxArray(
-                bounding_boxes=np.concatenate((old_bounding_boxes, new_bounding_boxes), axis=0),
+                bounding_boxes=np.concatenate(
+                    (old_bounding_boxes, new_bounding_boxes), axis=0
+                ),
                 confidences=np.concatenate((old_confidences, new_confidences), axis=0),
                 labels=np.concatenate((old_labels, new_labels), axis=0),
-                bounding_box_ids=np.concatenate((old_bounding_box_ids, new_bounding_box_ids), axis=0),
+                bounding_box_ids=np.concatenate(
+                    (old_bounding_box_ids, new_bounding_box_ids), axis=0
+                ),
             )
+    assert output.bounding_boxes.shape[0] == sum(
+        [bba.bounding_boxes.shape[0] for bba in bounding_box_arrays]
+    )
+    assert (
+        output.bounding_box_ids.shape[0] == np.unique(output.bounding_box_ids).shape[0]
+    )
     return output

@@ -15,18 +15,18 @@ class Suppressor:
     """
 
     def __init__(
-            self,
-            metric: Metric,
-            selector: Selector,
+        self,
+        metric: Metric,
+        selector: Selector,
     ):
         self.metric = metric
         self.selector = selector
 
     def transform(
-            self,
-            bounding_box_array: BoundingBoxArray,
-            *args,
-            **kwargs,
+        self,
+        bounding_box_array: BoundingBoxArray,
+        *args,
+        **kwargs,
     ) -> BoundingBoxArray:
         """A method that filters down the amount of bounding boxes of an image
 

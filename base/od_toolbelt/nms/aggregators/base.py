@@ -12,18 +12,14 @@ class Aggregator:
     An aggregator is how one set of bounding boxes is chosen from multiple layered sets of bounding boxes.
     """
 
-    def __init__(
-            self,
-            suppressor: Suppressor,
-            metric: Metric,
-            *args,
-            **kwargs
-    ):
+    def __init__(self, suppressor: Suppressor, metric: Metric, *args, **kwargs):
         """Any configuration variables can be passed and stored here."""
         self.suppressor = suppressor
         self.metric = metric
 
-    def transform(self, bounding_box_arrays: List[BoundingBoxArray]) -> BoundingBoxArray:
+    def transform(
+        self, bounding_box_arrays: List[BoundingBoxArray]
+    ) -> BoundingBoxArray:
         """Ensembles multiple layers of boxes into a single layer.
 
         Args:
