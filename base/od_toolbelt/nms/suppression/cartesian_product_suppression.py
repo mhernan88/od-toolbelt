@@ -58,7 +58,6 @@ class CartesianProductSuppression(Suppressor):
         bounding_box_ids = [
             x for x in bounding_box_ids
         ]  # TODO: Replace with optimized version.
-        print(f"NEW BOUNDING BOX IDS: {bounding_box_ids}")
         boundary_boudning_box_idsx = set(
             [b[0] for b in bounding_box_ids]
         )  # TODO: Replace with optimized version.
@@ -106,7 +105,6 @@ class CartesianProductSuppression(Suppressor):
             selected_bids.extend(no_overlap_boxes)
             evaluated_bids.update(selected_bids)
 
-        print(f"RETURNING {len(selected_bids)} BIDS")
         return (
             np.add(
                 np.asarray(selected_bids, np.int64), np.min(list(all_bounding_box_idsx))

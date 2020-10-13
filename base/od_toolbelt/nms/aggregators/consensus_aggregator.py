@@ -1,4 +1,5 @@
 import numpy as np
+from math import ceil
 from typing import List, Any
 from nptyping import NDArray
 
@@ -7,9 +8,13 @@ from od_toolbelt import BoundingBoxArray, concatenate
 
 
 class ConsensusAggregator(Aggregator):
+    """
+    Default consensus aggregator. Takes multiple images worth of suppressed bounding boxes and aggregates any
+    overlapping boxes down to their average points, ultimately only returning
+    """
     def transform(
         self, bounding_box_arrays: List[BoundingBoxArray]
-    ) -> NDArray((Any, 2, 2), np.float64):
+    ) -> NDArray[(Any, 2, 2), np.float64]:
         # TODO: Carry confidences and labels through
         assert isinstance(bounding_box_arrays, list)
 
@@ -80,7 +85,7 @@ class ConsensusAggregator(Aggregator):
                 else:
                     box_groups.append(set(pair))
 
-        box_groups = set([tuple(bg) for bg in box_groups])
+        box_groups = set([tuple(bg) for bg in box_groups if len(tuple(bg)) > ceil(len(bounding_box_arrays)/2)])
         aggregated_box_groups = np.zeros((len(list(box_groups)), 2, 2), np.float64)
 
         for i, bg in enumerate(box_groups):

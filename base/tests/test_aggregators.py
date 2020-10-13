@@ -57,4 +57,4 @@ def test_consensus_aggregator():
     )
     result = aggregator.transform([bounding_box_array1, bounding_box_array2])
 
-    assert result.shape[0] == 3
+    assert result.shape[0] == 2
