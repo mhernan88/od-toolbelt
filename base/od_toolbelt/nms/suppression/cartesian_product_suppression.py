@@ -4,10 +4,10 @@ import numpy as np  # type: ignore
 import itertools  # type: ignore
 from typing import Any, List, Tuple, Iterator, Set, Optional  # type: ignore
 
-from od_toolbelt.nms.metrics.base import Metric  # type: ignore
-from od_toolbelt.nms.selection.base import Selector  # type: ignore
-from od_toolbelt.nms.suppression.base import Suppressor  # type: ignore
-from od_toolbelt import BoundingBoxArray  # type: ignore
+from od_toolbelt.nms.metrics import Metric  # type: ignore
+from od_toolbelt.nms.selection import Selector  # type: ignore
+from od_toolbelt.nms.suppression import Suppressor  # type: ignore
+from od_toolbelt import BoundingBoxArray, concatenate  # type: ignore
 
 
 class CartesianProductSuppression(Suppressor):
@@ -135,32 +135,16 @@ class CartesianProductSuppression(Suppressor):
 
         return bounding_box_array[np.asarray(selected_bids, dtype=np.int64)]
 
-    # def burst(
-    #     self,
-    #     bounding_box_burst: List[NDArray[(Any, 2, 2), np.float64]],
-    #     confidences_burst: List[NDArray[(Any,), np.float64]],
-    #     labels_burst: List[NDArray[(Any,), np.int64]],
-    #     *args,
-    #     **kwargs
-    # ) -> Tuple[NDArray[(Any, 2, 2), np.float64], NDArray[(Any,), np.float64]]:
-    #     """See base class documentation."""
-    #     bounding_box = np.concatenate(bounding_box_burst, axis=0)
-    #     confidences = np.concatenate(confidences_burst, axis=0)
-    #     indexes = self.transform(bounding_box, confidences, labels_burst)
-    #     return bounding_box[indexes, :, :], confidences[indexes]
-    #
-    # def batch(
-    #     self,
-    #     bounding_box_batch: List[List[NDArray[(Any, 2, 2), np.float64]]],
-    #     confidences_batch: List[List[NDArray[(Any,), np.float64]]],
-    #     labels_batch: List[List[NDArray[(Any,), np.int64]]],
-    #     *args,
-    #     **kwargs
-    # ) -> List[Tuple[NDArray[(Any, 2, 2), np.float64], NDArray[(Any,), np.float64]]]:
-    #     """See base class documentation."""
-    #     return [
-    #         self.burst(bounding_box_burst, confidences_burst, labels_burst)
-    #         for bounding_box_burst, confidences_burst, labels_burst in zip(
-    #             bounding_box_batch, confidences_batch, labels_batch
-    #         )
-    #     ]
+    def burst(
+            self,
+            bounding_box_array_burst: List[BoundingBoxArray],
+    ) -> BoundingBoxArray:
+        """See base class documentation."""
+        return self.transform(concatenate(bounding_box_array_burst))
+
+    def batch(
+        self,
+        bounding_box_array_batch: List[List[BoundingBoxArray]],
+    ) -> List[BoundingBoxArray]:
+        """See base class documentation."""
+        return [self.burst(bounding_box_array_burst)for bounding_box_array_burst in bounding_box_array_batch]

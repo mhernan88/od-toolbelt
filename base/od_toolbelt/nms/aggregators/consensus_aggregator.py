@@ -59,7 +59,7 @@ class ConsensusAggregator(Aggregator):
 
         box_groups = [
             set((int(bid),))
-            for bid in concatenated_bounding_box_array.bounding_box_ids
+            for bid in concatenated_bouynding_box_array.bounding_box_ids
             if bid not in flattened_overlapping_pairs
         ]
         # Checking that singleton boxes actually don't overlap

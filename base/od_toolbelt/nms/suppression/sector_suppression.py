@@ -5,9 +5,9 @@ import numpy as np  # type: ignore
 from nptyping import NDArray  # type: ignore
 from typing import Any, Tuple, List  # type: ignore
 
-from od_toolbelt.nms.metrics.base import Metric  # type: ignore
-from od_toolbelt.nms.selection.base import Selector  # type: ignore
-from od_toolbelt.nms.suppression.cartesian_product_suppression import CartesianProductSuppression  # type: ignore
+from od_toolbelt.nms.metrics import Metric  # type: ignore
+from od_toolbelt.nms.selection import Selector  # type: ignore
+from od_toolbelt.nms.suppression import CartesianProductSuppression  # type: ignore
 from od_toolbelt import BoundingBoxArray, concatenate  # type: ignore
 
 
