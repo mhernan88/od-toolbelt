@@ -142,10 +142,10 @@ class BoundingBoxArray:
         for item in payload:
             bounding_boxes.append(
                 (
-                    (item["boundingBox"]["top"], item["boundingBox"]["left"]),
+                    (item["boundingBox"]["top"], item["boundingBox"]["left"]),  # type: ignore
                     (
-                        item["boundingBox"]["top"] + item["boundingBox"]["height"],
-                        item["boundingBox"]["left"] + item["boundingBox"]["width"],
+                        item["boundingBox"]["top"] + item["boundingBox"]["height"],  # type: ignore
+                        item["boundingBox"]["left"] + item["boundingBox"]["width"],  # type: ignore
                     ),
                 )
             )
@@ -244,10 +244,10 @@ class BoundingBoxArray:
         self, variable_label: str, options: Union[Iterator[str], Iterator[np.dtype]]
     ):
         text = f"In BoundingBoxesArray.check(), {variable_label} dtype is not "
-        options = [opt if isinstance(opt, str) else self.dtypes[opt] for opt in options]
+        options = [opt if isinstance(opt, str) else self.dtypes[opt] for opt in options]  # type: ignore
 
         if len(options) == 1:
-            warn(f"{text} {options[0]}")
+            warn(f"{text} {options[0]}")  # type: ignore
         else:
             options_string = ", ".join(options)
             warn(f"{text} one of: {options_string}", SyntaxWarning)

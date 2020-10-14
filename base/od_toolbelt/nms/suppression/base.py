@@ -38,8 +38,8 @@ class Suppressor:
         raise NotImplementedError
 
     def burst(
-            self,
-            bounding_box_array_burst: BoundingBoxArray,
+        self,
+        bounding_box_array_burst: BoundingBoxArray,
     ) -> BoundingBoxArray:
         """A method to run transform() on a burst of images.
 
@@ -56,8 +56,7 @@ class Suppressor:
         raise NotImplementedError
 
     def batch(
-            self,
-            bounding_box_array_batch: List[BoundingBoxArray]
+        self, bounding_box_array_batch: List[BoundingBoxArray]
     ) -> BoundingBoxArray:
         """A method to run burst() on a batch of different images.
 

@@ -136,8 +136,8 @@ class CartesianProductSuppression(Suppressor):
         return bounding_box_array[np.asarray(selected_bids, dtype=np.int64)]
 
     def burst(
-            self,
-            bounding_box_array_burst: List[BoundingBoxArray],
+        self,
+        bounding_box_array_burst: List[BoundingBoxArray],
     ) -> BoundingBoxArray:
         """See base class documentation."""
         return self.transform(concatenate(bounding_box_array_burst))
@@ -147,4 +147,7 @@ class CartesianProductSuppression(Suppressor):
         bounding_box_array_batch: List[List[BoundingBoxArray]],
     ) -> List[BoundingBoxArray]:
         """See base class documentation."""
-        return [self.burst(bounding_box_array_burst)for bounding_box_array_burst in bounding_box_array_batch]
+        return [
+            self.burst(bounding_box_array_burst)
+            for bounding_box_array_burst in bounding_box_array_batch
+        ]
