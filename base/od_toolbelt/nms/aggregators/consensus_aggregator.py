@@ -1,10 +1,12 @@
-import numpy as np
-from math import ceil
-from typing import List, Any
-from nptyping import NDArray
+# Copyright 2020 Michael Hernandez
 
-from od_toolbelt.nms.aggregators import Aggregator
-from od_toolbelt import BoundingBoxArray, concatenate
+import numpy as np  # type: ignore
+from math import ceil  # type: ignore
+from typing import List, Any  # type: ignore
+from nptyping import NDArray  # type: ignore
+
+from od_toolbelt.nms.aggregators import Aggregator  # type: ignore
+from od_toolbelt import BoundingBoxArray, concatenate  # type: ignore
 
 
 class ConsensusAggregator(Aggregator):
