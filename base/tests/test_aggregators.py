@@ -1,45 +1,11 @@
 import numpy as np
 
 import od_toolbelt as od
+from .test_utils.test_setup import setup_test_case_multi
 
 
 def test_consensus_aggregator():
-    boxes1 = np.array(
-        (
-            ((0.10, 0.10), (0.20, 0.20)),
-            ((0.30, 0.30), (0.40, 0.40)),
-        ),
-        dtype=np.float64,
-    )
-    confidences1 = np.array((0.6, 0.65), dtype=np.float64)
-    labels1 = np.array((1, 1), dtype=np.int64)
-    bbids1 = np.array((1, 2), dtype=np.int64)
-
-    bounding_box_array1 = od.BoundingBoxArray(
-        bounding_boxes=boxes1,
-        confidences=confidences1,
-        labels=labels1,
-        bounding_box_ids=bbids1,
-    )
-
-    boxes2 = np.array(
-        (
-            ((0.11, 0.11), (0.21, 0.21)),
-            ((0.35, 0.35), (0.50, 0.50)),
-            ((0.60, 0.60), (0.70, 0.70)),
-        ),
-        dtype=np.float64,
-    )
-    confidences2 = np.array((0.7, 0.65, 0.55), dtype=np.float64)
-    labels2 = np.array((1, 1, 1), dtype=np.int64)
-    bbids2 = np.array((3, 4, 5), dtype=np.int64)
-
-    bounding_box_array2 = od.BoundingBoxArray(
-        bounding_boxes=boxes2,
-        confidences=confidences2,
-        labels=labels2,
-        bounding_box_ids=bbids2,
-    )
+    bboxes = [od.BoundingBoxArray(*x) for x in setup_test_case_multi()]
 
     suppressor_metric = od.nms.metrics.DefaultIntersectionOverTheUnion(
         threshold=0.05, direction="gte"
@@ -55,6 +21,6 @@ def test_consensus_aggregator():
     aggregator = od.nms.aggregators.ConsensusAggregator(
         suppressor=suppressor, metric=aggregator_metric
     )
-    result = aggregator.transform([bounding_box_array1, bounding_box_array2])
+    result = aggregator.transform(bboxes)
 
     assert result.shape[0] == 2

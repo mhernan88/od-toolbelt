@@ -229,14 +229,18 @@ class BoundingBoxArray:
             writer.writerows(rows)
 
     def bounding_box_id_to_ix(self, bid: int):
-        return np.argwhere(self.bounding_box_ids == int(bid))
+        return np.argwhere(self.bounding_box_ids == int(bid)).ravel()
 
     def lookup_box(self, bid: int) -> NDArray[(2, 2), np.float64]:
         assert isinstance(bid, int)
         assert bid in self.bounding_box_ids
-        box = self.bounding_boxes[
-            self.bounding_box_ids == np.array((bid,), dtype=np.int64), :, :
-        ][0]
+        ix = self.bounding_box_id_to_ix(bid)
+        # TODO: Fix this indexing
+        print("SHAPE1")
+        print(self.bounding_boxes.shape)
+        print("SHAPE2")
+        print(self.bounding_boxes[ix, :, :].shape)
+        box = self.bounding_boxes[ix, :, :][0, :, :]
         assert len(box.shape) == 2
         return box
 
@@ -469,7 +473,7 @@ def concatenate(bounding_box_arrays: List[BoundingBoxArray]):
     Returns:
 
     """
-    bounding_box_arrays = [bb for bb in bounding_box_arrays if bb is not None]
+    bounding_box_arrays = [bb for bb in bounding_box_arrays if (bb is not None and len(bb) > 0)]
 
     if len(bounding_box_arrays) == 0:
         raise ValueError(

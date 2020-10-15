@@ -86,7 +86,7 @@ class ConsensusAggregator(Aggregator):
                 evaluated_pairs.add(sorted_bid_pair)
         return overlapping_pairs
 
-    def _assign_box_groups(self, bounding_box_array, overlapping_pairs, vote_threshold):
+    def _assign_box_groups(self, bounding_box_array, overlapping_pairs):
         flattened_overlapping_pairs = []
         for pair in overlapping_pairs:
             for item in pair:

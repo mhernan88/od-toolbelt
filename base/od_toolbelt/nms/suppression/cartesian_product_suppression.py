@@ -62,10 +62,10 @@ class CartesianProductSuppression(Suppressor):
         boundary_boudning_box_idsx = set(
             [b[0] for b in bounding_box_ids]
         )  # TODO: Replace with optimized version.
-        all_bounding_box_idsx = set(
+        all_bounding_box_idxs = set(
             [b[1] for b in bounding_box_ids]
         )  # TODO: Replace with optimized version.
-        non_boundary_bounding_box_ids = all_bounding_box_idsx.difference(
+        non_boundary_bounding_box_ids = all_bounding_box_idxs.difference(
             boundary_boudning_box_idsx
         )
 
@@ -99,22 +99,36 @@ class CartesianProductSuppression(Suppressor):
                 no_overlap[bounding_box_array.bounding_box_id_to_ix(bids[1])] = False
             last_bid = bids[0]
         if not symmetric and len(non_boundary_bounding_box_ids) > 0:
-            no_overlap[list(non_boundary_bounding_box_ids)] = False
+            no_overlap_ixs = [
+                int(bounding_box_array.bounding_box_id_to_ix(x).ravel()) for x in list(non_boundary_bounding_box_ids)
+            ]
+            print("IXS:")
+            print(no_overlap_ixs)
+            no_overlap[no_overlap_ixs] = False
 
+        all_bounding_box_idxs_list = list(all_bounding_box_idxs)
         if not empty:
-            no_overlap_boxes = np.argwhere(no_overlap).ravel().tolist()
+            no_overlap_boxes = np.add(np.argwhere(no_overlap).ravel(), np.min(all_bounding_box_idxs_list)).tolist()
             selected_bids.extend(no_overlap_boxes)
             evaluated_bids.update(selected_bids)
 
+        # if len(all_bounding_box_idxs_list) > 0:
         return (
-            np.add(
-                np.asarray(selected_bids, np.int64), np.min(list(all_bounding_box_idsx))
-            ),
-            np.add(
-                np.asarray(list(evaluated_bids), np.int64),
-                np.min(list(all_bounding_box_idsx)),
-            ),
+            selected_bids, set(list(evaluated_bids))
+                # np.add(
+                #     np.asarray(selected_bids, np.int64), np.min(list(all_bounding_box_idxs))
+                # ),
+                # np.add(
+                #     np.asarray(list(evaluated_bids), np.int64),
+                    # np.min(list(all_bounding_box_idxs)),
+                # ),
         )
+        # else:
+        #     return (
+        #         selected_bids, evaluated_bids
+                # np.asarray(selected_bids, np.int64,),
+                # np.asarray(list(evaluated_bids), np.int64,),
+            # )
 
     def _cp_transform(
             self,

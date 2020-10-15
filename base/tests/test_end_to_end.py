@@ -13,14 +13,15 @@ IOU_THRESHOLD = 0.001
 LOGGER = logging.getLogger()
 
 
-def run_test_end_to_end_cp_nms(n_boxes: int):
-    bounding_boxes, confidences, labels = setup_test_case()
+def run_test_end_to_end(n_boxes: int, suppressor: od.nms.suppression.Suppressor):
+    bounding_boxes, confidences, labels, bbids = setup_test_case()
     n = copy(bounding_boxes.shape[0])
 
-    bounding_boxes, confidences, labels = jitter_boxes(
+    bounding_boxes, confidences, labels, _ = jitter_boxes(
         bounding_boxes,
         confidences,
         labels,
+        bbids,
         range_n_new_boxes=(n_boxes, n_boxes),
     )
 
@@ -28,6 +29,11 @@ def run_test_end_to_end_cp_nms(n_boxes: int):
         bounding_boxes=bounding_boxes, confidences=confidences, labels=labels
     )
 
+    filtered_boxes = suppressor.transform(bounding_box_array=data_payload)
+    assert len(filtered_boxes) == n
+
+
+def run_test_end_to_end_cp_nms(n_boxes: int):
     iou_metric = od.nms.metrics.DefaultIntersectionOverTheUnion(
         threshold=IOU_THRESHOLD, direction="gte"
     )
@@ -37,26 +43,10 @@ def run_test_end_to_end_cp_nms(n_boxes: int):
         metric=iou_metric, selector=random_selector
     )
 
-    filtered_boxes = suppressor.transform(bounding_box_array=data_payload)
-    print(filtered_boxes)
-    assert len(filtered_boxes) == n
+    run_test_end_to_end(n_boxes, suppressor)
 
 
 def run_test_end_to_end_sb_nms(n_boxes: int):
-    bounding_boxes, confidences, labels = setup_test_case()
-    n = copy(bounding_boxes.shape[0])
-
-    bounding_boxes, confidences, labels = jitter_boxes(
-        bounding_boxes,
-        confidences,
-        labels,
-        range_n_new_boxes=(n_boxes, n_boxes),
-    )
-
-    data_payload = od.BoundingBoxArray(
-        bounding_boxes=bounding_boxes, confidences=confidences, labels=labels
-    )
-
     iou_metric = od.nms.metrics.DefaultIntersectionOverTheUnion(
         threshold=IOU_THRESHOLD, direction="gte"
     )
@@ -66,9 +56,7 @@ def run_test_end_to_end_sb_nms(n_boxes: int):
         metric=iou_metric, selector=random_selector, sector_divisions=1
     )
 
-    filtered_boxes = suppressor.transform(bounding_box_array=data_payload)
-    print(filtered_boxes)
-    assert len(filtered_boxes) == n
+    run_test_end_to_end(n_boxes, suppressor)
 
 
 def test_end_to_end_cp_nms1():
