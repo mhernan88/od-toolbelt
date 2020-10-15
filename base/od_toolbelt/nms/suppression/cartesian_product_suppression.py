@@ -2,7 +2,7 @@
 
 import numpy as np  # type: ignore
 import itertools  # type: ignore
-from typing import Any, List, Tuple, Iterator, Set, Optional  # type: ignore
+from typing import Any, List, Tuple, Iterator, Set, Union, Optional  # type: ignore
 
 from od_toolbelt.nms.metrics import Metric  # type: ignore
 from od_toolbelt.nms.selection import Selector  # type: ignore
@@ -16,9 +16,9 @@ class CartesianProductSuppression(Suppressor):
     """
 
     def __init__(
-        self,
-        metric: Metric,
-        selector: Selector,
+            self,
+            metric: Metric,
+            selector: Selector,
     ):
         """Method that simply stores values for use in other methods.
 
@@ -29,18 +29,19 @@ class CartesianProductSuppression(Suppressor):
         super().__init__(metric, selector)
 
     def transform(
-        self, bounding_box_array: BoundingBoxArray, *args, **kwargs
+            self,
+            bounding_box_array: BoundingBoxArray,
     ) -> BoundingBoxArray:
         """A wrapper for cp_transform."""
-        return self._cp_transform(bounding_box_array, *args, **kwargs)
+        return self._cp_transform(bounding_box_array)
 
     def _evaluate_overlap(
-        self,
-        bounding_box_array: BoundingBoxArray,
-        bounding_box_ids: Iterator[
-            Tuple[Any, Any]
-        ],  # TODO: Replace with nested loop instead of CP
-        symmetric: bool = False,
+            self,
+            bounding_box_array: BoundingBoxArray,
+            bounding_box_ids: Iterator[
+                Tuple[Any, Any]
+            ],  # TODO: Replace with nested loop instead of CP
+            symmetric: bool = False,
     ) -> Tuple[List[int], Set[int]]:
         """For a given set of bounding boxes, this method applies cartesian product non-maximum suppression to them.
 
@@ -116,7 +117,8 @@ class CartesianProductSuppression(Suppressor):
         )
 
     def _cp_transform(
-        self, bounding_box_array: Optional[BoundingBoxArray], *args, **kwargs
+            self,
+            bounding_box_array: Optional[BoundingBoxArray],
     ) -> Optional[BoundingBoxArray]:
         """See base class documentation for transform().
 
@@ -136,18 +138,30 @@ class CartesianProductSuppression(Suppressor):
         return bounding_box_array[np.asarray(selected_bids, dtype=np.int64)]
 
     def burst(
-        self,
-        bounding_box_array_burst: List[BoundingBoxArray],
-    ) -> BoundingBoxArray:
+            self,
+            bounding_box_array_burst: List[BoundingBoxArray],
+            separate: bool = False,
+    ) -> Union[
+        List[BoundingBoxArray],
+        BoundingBoxArray
+    ]:
         """See base class documentation."""
+        if separate:
+            output = []
+            for bbox in bounding_box_array_burst:
+                output.append(self.transform(bbox))
         return self.transform(concatenate(bounding_box_array_burst))
 
     def batch(
-        self,
-        bounding_box_array_batch: List[List[BoundingBoxArray]],
-    ) -> List[BoundingBoxArray]:
+            self,
+            bounding_box_array_batch: List[List[BoundingBoxArray]],
+            separate: bool = False,
+    ) -> Union[
+        List[List[BoundingBoxArray]],
+        List[BoundingBoxArray]
+    ]:
         """See base class documentation."""
         return [
-            self.burst(bounding_box_array_burst)
+            self.burst(bounding_box_array_burst, separate)
             for bounding_box_array_burst in bounding_box_array_batch
         ]
