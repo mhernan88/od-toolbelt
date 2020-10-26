@@ -2,13 +2,13 @@ import random
 import pytest
 import od_toolbelt as od
 
-from .test_utils import test_setup
+from .test_utils import setup_tests
 
 random.seed(7171)
 
 
 def test_create_sectors1():
-    metric, selector = test_setup.get_default_sector_suppressor_components()
+    metric, selector = setup_tests.get_default_sector_suppressor_components()
     for n in range(10):
         print(f"Running test_create_sectors for {n+1} division.")
         suppressor = od.nms.suppression.SectorSuppression(metric=metric, selector=selector, sector_divisions=n+1)
@@ -17,7 +17,7 @@ def test_create_sectors1():
 
 
 def create_sectors_dividing_lines(sector_divisions):
-    metric, selector = test_setup.get_default_sector_suppressor_components()
+    metric, selector = setup_tests.get_default_sector_suppressor_components()
     suppressor = od.nms.suppression.SectorSuppression(metric=metric, selector=selector, sector_divisions=sector_divisions)
     _, dividing_lines = suppressor._create_sectors()
     return dividing_lines[-1]
@@ -49,7 +49,7 @@ def test_create_sectors5():
 
 def test_handle_boundaries1():
     # Handle boundaries - no boxes on boundaries.
-    boxes, confidences, labels, bbids = test_setup.setup_test_case()
+    boxes, confidences, labels, bbids = setup_tests.setup_test_case()
     bb = od.BoundingBoxArray(
         bounding_boxes=boxes,
         confidences=confidences,
@@ -58,7 +58,7 @@ def test_handle_boundaries1():
     )
 
     sector_divisions = 1
-    metric, selector = test_setup.get_default_sector_suppressor_components()
+    metric, selector = setup_tests.get_default_sector_suppressor_components()
     suppressor = od.nms.suppression.SectorSuppression(metric=metric, selector=selector, sector_divisions=sector_divisions)
     _, dividing_lines = suppressor._create_sectors()
     result = suppressor._handle_boundaries(bb, dividing_lines)
@@ -67,7 +67,7 @@ def test_handle_boundaries1():
 
 def test_handle_boundaries2():
     # Handle boundaries - two non-overlapping boxes on boundaries w/ 1 division.
-    boxes, confidences, labels, bbids = test_setup.setup_test_case_on_boundary()
+    boxes, confidences, labels, bbids = setup_tests.setup_test_case_on_boundary()
     bb = od.BoundingBoxArray(
         bounding_boxes=boxes,
         confidences=confidences,
@@ -76,7 +76,7 @@ def test_handle_boundaries2():
     )
 
     sector_divisions = 1
-    metric, selector = test_setup.get_default_sector_suppressor_components()
+    metric, selector = setup_tests.get_default_sector_suppressor_components()
     suppressor = od.nms.suppression.SectorSuppression(metric=metric, selector=selector, sector_divisions=sector_divisions)
     _, dividing_lines = suppressor._create_sectors()
     result = suppressor._handle_boundaries(bb, dividing_lines)
@@ -85,7 +85,7 @@ def test_handle_boundaries2():
 
 def test_handle_boundaries3():
     # Handle boundaries - two non-overlapping boxes on boundaries w/ 2 divisions
-    boxes, confidences, labels, bbids = test_setup.setup_test_case_on_boundary()
+    boxes, confidences, labels, bbids = setup_tests.setup_test_case_on_boundary()
     bb = od.BoundingBoxArray(
         bounding_boxes=boxes,
         confidences=confidences,
@@ -94,7 +94,7 @@ def test_handle_boundaries3():
     )
 
     sector_divisions = 2
-    metric, selector = test_setup.get_default_sector_suppressor_components()
+    metric, selector = setup_tests.get_default_sector_suppressor_components()
     suppressor = od.nms.suppression.SectorSuppression(metric=metric, selector=selector,
                                                       sector_divisions=sector_divisions)
     _, dividing_lines = suppressor._create_sectors()
@@ -104,9 +104,9 @@ def test_handle_boundaries3():
 
 def test_handle_boundaries4():
     # Handle boundaries - two sets of boxes (1 overlap each) on boundaries w/ 1 division
-    boxes, confidences, labels, bbids = test_setup.setup_test_case_on_boundary()
+    boxes, confidences, labels, bbids = setup_tests.setup_test_case_on_boundary()
 
-    boxes, confidences, labels, bbids = test_setup.jitter_boxes(
+    boxes, confidences, labels, bbids = setup_tests.jitter_boxes(
         bounding_boxes=boxes,
         confidences=confidences,
         labels=labels,
@@ -123,7 +123,7 @@ def test_handle_boundaries4():
     bb.check()
 
     sector_divisions = 1
-    metric, selector = test_setup.get_default_sector_suppressor_components()
+    metric, selector = setup_tests.get_default_sector_suppressor_components()
     suppressor = od.nms.suppression.SectorSuppression(metric=metric, selector=selector,
                                                       sector_divisions=sector_divisions)
     _, dividing_lines = suppressor._create_sectors()
@@ -133,9 +133,9 @@ def test_handle_boundaries4():
 
 def test_handle_boundaries5():
     # Handle boundaries - two sets of boxes (1 overlap each) on boundaries w/ 2 division
-    boxes, confidences, labels, bbids = test_setup.setup_test_case_on_boundary()
+    boxes, confidences, labels, bbids = setup_tests.setup_test_case_on_boundary()
 
-    boxes, confidences, labels, bbids = test_setup.jitter_boxes(
+    boxes, confidences, labels, bbids = setup_tests.jitter_boxes(
         bounding_boxes=boxes,
         confidences=confidences,
         labels=labels,
@@ -152,7 +152,7 @@ def test_handle_boundaries5():
     bb.check()
 
     sector_divisions = 2
-    metric, selector = test_setup.get_default_sector_suppressor_components()
+    metric, selector = setup_tests.get_default_sector_suppressor_components()
     suppressor = od.nms.suppression.SectorSuppression(metric=metric, selector=selector,
                                                       sector_divisions=sector_divisions)
     _, dividing_lines = suppressor._create_sectors()
@@ -163,9 +163,9 @@ def test_handle_boundaries5():
 # TODO: Not passing
 def test_handle_boundaries6():
     # Handle boundaries - two sets of boxes (5 overlap each) on boundaries w/ 1 division
-    boxes, confidences, labels, bbids = test_setup.setup_test_case_on_boundary()
+    boxes, confidences, labels, bbids = setup_tests.setup_test_case_on_boundary()
 
-    boxes, confidences, labels, bbids = test_setup.jitter_boxes(
+    boxes, confidences, labels, bbids = setup_tests.jitter_boxes(
         bounding_boxes=boxes,
         confidences=confidences,
         labels=labels,
@@ -182,7 +182,7 @@ def test_handle_boundaries6():
     bb.check()
 
     sector_divisions = 1
-    metric, selector = test_setup.get_default_sector_suppressor_components()
+    metric, selector = setup_tests.get_default_sector_suppressor_components()
     suppressor = od.nms.suppression.SectorSuppression(metric=metric, selector=selector,
                                                       sector_divisions=sector_divisions)
     _, dividing_lines = suppressor._create_sectors()
@@ -192,9 +192,9 @@ def test_handle_boundaries6():
 
 def test_handle_boundaries7():
     # Handle boundaries - two sets of boxes (5 overlap each) on boundaries w/ 2 division
-    boxes, confidences, labels, bbids = test_setup.setup_test_case_on_boundary()
+    boxes, confidences, labels, bbids = setup_tests.setup_test_case_on_boundary()
 
-    boxes, confidences, labels, bbids = test_setup.jitter_boxes(
+    boxes, confidences, labels, bbids = setup_tests.jitter_boxes(
         bounding_boxes=boxes,
         confidences=confidences,
         labels=labels,
@@ -211,7 +211,7 @@ def test_handle_boundaries7():
     bb.check()
 
     sector_divisions = 2
-    metric, selector = test_setup.get_default_sector_suppressor_components()
+    metric, selector = setup_tests.get_default_sector_suppressor_components()
     suppressor = od.nms.suppression.SectorSuppression(metric=metric, selector=selector,
                                                       sector_divisions=sector_divisions)
     _, dividing_lines = suppressor._create_sectors()

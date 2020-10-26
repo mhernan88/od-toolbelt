@@ -3,7 +3,7 @@ from od_toolbelt.nms.suppression import CartesianProductSuppression, SectorSuppr
 
 from od_toolbelt.nms.metrics.iou import DefaultIntersectionOverTheUnion
 from od_toolbelt.nms.selection.random_selector import RandomSelector
-from .test_utils.test_setup import setup_test_case
+from .test_utils.setup_tests import setup_test_case
 
 
 def smoke_test_setup():

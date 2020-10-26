@@ -3,7 +3,7 @@
 import random  # type: ignore
 import logging  # type: ignore
 from copy import copy  # type: ignore
-from .test_utils.test_setup import setup_test_case, jitter_boxes  # type: ignore
+from .test_utils.setup_tests import setup_test_case, jitter_boxes  # type: ignore
 
 import od_toolbelt as od  # type: ignore
 

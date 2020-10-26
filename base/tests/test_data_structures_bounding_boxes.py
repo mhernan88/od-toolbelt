@@ -2,7 +2,7 @@ import pytest
 import numpy as np
 from od_toolbelt import BoundingBoxArray
 
-from .test_utils.test_setup import setup_test_case, one_additional
+from .test_utils.setup_tests import setup_test_case, one_additional
 
 
 def test_check1():

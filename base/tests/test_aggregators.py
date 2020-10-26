@@ -1,7 +1,5 @@
-import numpy as np
-
 import od_toolbelt as od
-from .test_utils.test_setup import setup_test_case_multi
+from .test_utils.setup_tests import setup_test_case_multi
 
 
 def test_consensus_aggregator():

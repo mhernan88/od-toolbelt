@@ -1,12 +1,12 @@
 import itertools
 import od_toolbelt as od
 
-from .test_utils import test_setup
+from .test_utils import setup_tests
 
 
 def test_evaluate_overlap1():
     # Tests method without any overlapping boxes
-    boxes, confidences, labels, bbids = test_setup.setup_test_case()
+    boxes, confidences, labels, bbids = setup_tests.setup_test_case()
     bb = od.BoundingBoxArray(
         bounding_boxes=boxes,
         confidences=confidences,
@@ -15,7 +15,7 @@ def test_evaluate_overlap1():
     )
     bbid_cp = itertools.product(bb.bounding_box_ids.tolist(), bb.bounding_box_ids.tolist())
 
-    metric, selector = test_setup.get_default_sector_suppressor_components()
+    metric, selector = setup_tests.get_default_sector_suppressor_components()
     suppressor = od.nms.suppression.CartesianProductSuppression(metric=metric, selector=selector)
 
     selected_bids, _ = suppressor._evaluate_overlap(bb, bbid_cp)
@@ -24,9 +24,9 @@ def test_evaluate_overlap1():
 
 def test_evaluate_overlap2():
     # Tests method 1 overlapping box each
-    boxes, confidences, labels, bbids = test_setup.setup_test_case()
+    boxes, confidences, labels, bbids = setup_tests.setup_test_case()
 
-    boxes, confidences, labels, bbids = test_setup.jitter_boxes(
+    boxes, confidences, labels, bbids = setup_tests.jitter_boxes(
         bounding_boxes=boxes,
         confidences=confidences,
         labels=labels,
@@ -42,7 +42,7 @@ def test_evaluate_overlap2():
     )
     bbid_cp = itertools.product(bb.bounding_box_ids.tolist(), bb.bounding_box_ids.tolist())
 
-    metric, selector = test_setup.get_default_sector_suppressor_components()
+    metric, selector = setup_tests.get_default_sector_suppressor_components()
     suppressor = od.nms.suppression.CartesianProductSuppression(metric=metric, selector=selector)
 
     selected_bids, _ = suppressor._evaluate_overlap(bb, bbid_cp, symmetric=True)
@@ -55,9 +55,9 @@ def test_evaluate_overlap2():
 
 def test_evaluate_overlap3():
     # Test method 5 overlapping boxes each
-    boxes, confidences, labels, bbids = test_setup.setup_test_case()
+    boxes, confidences, labels, bbids = setup_tests.setup_test_case()
 
-    boxes, confidences, labels, bbids = test_setup.jitter_boxes(
+    boxes, confidences, labels, bbids = setup_tests.jitter_boxes(
         bounding_boxes=boxes,
         confidences=confidences,
         labels=labels,
@@ -73,7 +73,7 @@ def test_evaluate_overlap3():
     )
     bbid_cp = itertools.product(bb.bounding_box_ids.tolist(), bb.bounding_box_ids.tolist())
 
-    metric, selector = test_setup.get_default_sector_suppressor_components()
+    metric, selector = setup_tests.get_default_sector_suppressor_components()
     suppressor = od.nms.suppression.CartesianProductSuppression(metric=metric, selector=selector)
 
     selected_bids, _ = suppressor._evaluate_overlap(bb, bbid_cp, symmetric=True)
@@ -87,7 +87,7 @@ def test_evaluate_overlap3():
 def test_cp_transform1():
     # Test None
     bb = None
-    metric, selector = test_setup.get_default_sector_suppressor_components()
+    metric, selector = setup_tests.get_default_sector_suppressor_components()
     suppressor = od.nms.suppression.CartesianProductSuppression(metric=metric, selector=selector)
 
     resulting_bb = suppressor._cp_transform(bb)
@@ -96,7 +96,7 @@ def test_cp_transform1():
 
 def test_cp_transform2():
     # Test w/ 0 overlapping boxes
-    boxes, confidences, labels, bbids = test_setup.setup_test_case()
+    boxes, confidences, labels, bbids = setup_tests.setup_test_case()
 
     bb = od.BoundingBoxArray(
         bounding_boxes=boxes,
@@ -105,7 +105,7 @@ def test_cp_transform2():
         bounding_box_ids=bbids
     )
 
-    metric, selector = test_setup.get_default_sector_suppressor_components()
+    metric, selector = setup_tests.get_default_sector_suppressor_components()
     suppressor = od.nms.suppression.CartesianProductSuppression(metric=metric, selector=selector)
 
     resulting_bb = suppressor._cp_transform(bb)
@@ -119,9 +119,9 @@ def test_cp_transform2():
 
 def test_cp_transform3():
     # Test w/ 1 overlapping boxes
-    boxes, confidences, labels, bbids = test_setup.setup_test_case()
+    boxes, confidences, labels, bbids = setup_tests.setup_test_case()
 
-    boxes, confidences, labels, bbids = test_setup.jitter_boxes(
+    boxes, confidences, labels, bbids = setup_tests.jitter_boxes(
         bounding_boxes=boxes,
         confidences=confidences,
         labels=labels,
@@ -136,7 +136,7 @@ def test_cp_transform3():
         bounding_box_ids=bbids
     )
 
-    metric, selector = test_setup.get_default_sector_suppressor_components()
+    metric, selector = setup_tests.get_default_sector_suppressor_components()
     suppressor = od.nms.suppression.CartesianProductSuppression(metric=metric, selector=selector)
 
     resulting_bb = suppressor._cp_transform(bb)
@@ -150,9 +150,9 @@ def test_cp_transform3():
 
 def test_cp_transform4():
     # Test w/ 1 overlapping boxes
-    boxes, confidences, labels, bbids = test_setup.setup_test_case()
+    boxes, confidences, labels, bbids = setup_tests.setup_test_case()
 
-    boxes, confidences, labels, bbids = test_setup.jitter_boxes(
+    boxes, confidences, labels, bbids = setup_tests.jitter_boxes(
         bounding_boxes=boxes,
         confidences=confidences,
         labels=labels,
@@ -167,7 +167,7 @@ def test_cp_transform4():
         bounding_box_ids=bbids
     )
 
-    metric, selector = test_setup.get_default_sector_suppressor_components()
+    metric, selector = setup_tests.get_default_sector_suppressor_components()
     suppressor = od.nms.suppression.CartesianProductSuppression(metric=metric, selector=selector)
 
     resulting_bb = suppressor._cp_transform(bb)
@@ -182,7 +182,7 @@ def test_cp_transform4():
 def test_transform1():
     # Test None
     bb = None
-    metric, selector = test_setup.get_default_sector_suppressor_components()
+    metric, selector = setup_tests.get_default_sector_suppressor_components()
     suppressor = od.nms.suppression.CartesianProductSuppression(metric=metric, selector=selector)
 
     resulting_bb = suppressor.transform(bb)
@@ -191,7 +191,7 @@ def test_transform1():
 
 def test_transform2():
     # Test w/ 0 overlapping boxes
-    boxes, confidences, labels, bbids = test_setup.setup_test_case()
+    boxes, confidences, labels, bbids = setup_tests.setup_test_case()
 
     bb = od.BoundingBoxArray(
         bounding_boxes=boxes,
@@ -200,7 +200,7 @@ def test_transform2():
         bounding_box_ids=bbids
     )
 
-    metric, selector = test_setup.get_default_sector_suppressor_components()
+    metric, selector = setup_tests.get_default_sector_suppressor_components()
     suppressor = od.nms.suppression.CartesianProductSuppression(metric=metric, selector=selector)
 
     resulting_bb = suppressor.transform(bb)
@@ -214,9 +214,9 @@ def test_transform2():
 
 def test_transform3():
     # Test w/ 1 overlapping boxes
-    boxes, confidences, labels, bbids = test_setup.setup_test_case()
+    boxes, confidences, labels, bbids = setup_tests.setup_test_case()
 
-    boxes, confidences, labels, bbids = test_setup.jitter_boxes(
+    boxes, confidences, labels, bbids = setup_tests.jitter_boxes(
         bounding_boxes=boxes,
         confidences=confidences,
         labels=labels,
@@ -231,7 +231,7 @@ def test_transform3():
         bounding_box_ids=bbids
     )
 
-    metric, selector = test_setup.get_default_sector_suppressor_components()
+    metric, selector = setup_tests.get_default_sector_suppressor_components()
     suppressor = od.nms.suppression.CartesianProductSuppression(metric=metric, selector=selector)
 
     resulting_bb = suppressor.transform(bb)
@@ -245,9 +245,9 @@ def test_transform3():
 
 def test_transform4():
     # Test w/ 1 overlapping boxes
-    boxes, confidences, labels, bbids = test_setup.setup_test_case()
+    boxes, confidences, labels, bbids = setup_tests.setup_test_case()
 
-    boxes, confidences, labels, bbids = test_setup.jitter_boxes(
+    boxes, confidences, labels, bbids = setup_tests.jitter_boxes(
         bounding_boxes=boxes,
         confidences=confidences,
         labels=labels,
@@ -262,7 +262,7 @@ def test_transform4():
         bounding_box_ids=bbids
     )
 
-    metric, selector = test_setup.get_default_sector_suppressor_components()
+    metric, selector = setup_tests.get_default_sector_suppressor_components()
     suppressor = od.nms.suppression.CartesianProductSuppression(metric=metric, selector=selector)
 
     resulting_bb = suppressor.transform(bb)
