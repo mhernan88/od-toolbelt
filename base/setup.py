@@ -2,7 +2,7 @@ from setuptools import setup  # type: ignore
 
 setup(
     name="odToolbox",
-    version="0.1.0",
+    version="0.1.1",
     packages=[
         "od_toolbelt",
         "od_toolbelt.data_structures",
