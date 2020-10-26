@@ -10,6 +10,7 @@ setup(
         "od_toolbelt.nms.metrics",
         "od_toolbelt.nms.selection",
         "od_toolbelt.nms.suppression",
+        "od_toolbelt.nms.aggregators",
     ],
     url="",
     license="",
