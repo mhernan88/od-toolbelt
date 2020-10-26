@@ -77,10 +77,10 @@ class Metric:
         else:
             raise ValueError("Invalid value provided for direction")
 
-    def within_range(
-            self,
-            bounding_box1: NDArray[(2, 2), np.float64],
-            bounding_box2: NDArray[(2, 2), np.float64],
+    def overlap(
+        self,
+        bounding_box1: NDArray[(2, 2), np.float64],
+        bounding_box2: NDArray[(2, 2), np.float64],
     ) -> bool:
         """Calculates whether a computed metric value is within a normal range.
 
@@ -98,10 +98,10 @@ class Metric:
         metric = self.compute(bounding_box1, bounding_box2)
         return self._compare_to_threshold(metric)
 
-    def within_range_many(
-            self,
-            bounding_boxes1: NDArray[(Any, 2, 2), np.float64],
-            bounding_boxes2: NDArray[(Any, 2, 2), np.float64],
+    def overlap_many(
+        self,
+        bounding_boxes1: NDArray[(Any, 2, 2), np.float64],
+        bounding_boxes2: NDArray[(Any, 2, 2), np.float64],
     ) -> NDArray[(Any,), np.bool]:
         """
 

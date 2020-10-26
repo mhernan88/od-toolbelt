@@ -344,14 +344,18 @@ selector class.
 After creating an instance of a selector class, the developer simply needs to pass a list of bounding box identifiers
 to the select() method. A single identifier is returned.
 
+### Aggregators
+Aggregators are how multiple images' worth of suppressed bounding boxes are aggregated down to a single set of
+bounding boxes. To use them, the developer should first run non-maximum suppression on a burst of images.
+
 ## Roadmap
-1. Python code optimizations - ***In Progress***.
-2. Add consensus-based selector - ***In Progress***.
-3. Add additional selectors (e.g. first selector, average selector, median selector, etc.).
-4. Add additional metrics (e.g. IOU^2, etc.).
-5. Complete refactorization (version 0.1).
-6. Create PyPi package.
-7. Convert codebase to optimized Cython.
-8. Add soft-NMS as an option.
-9. Integration with object detection frameworks (e.g. Tensorflow, etc.).
-10. Integration with object detection services (e.g. AWS SageMaker, Azure Custom Vision, etc.).
+- [ ] Python code optimizations.
+- [x] Add consensus-based aggregator.
+- [ ] Add additional selectors (e.g. first selector, average selector, median selector, etc.).
+- [ ] Add additional metrics (e.g. IOU^2, etc.).
+- [ ] Complete refactorization.
+- [ ] Create PyPi package.
+- [ ] Convert codebase to optimized Cython.
+- [ ] Add soft-NMS as an option.
+- [ ] Integration with object detection frameworks (e.g. Tensorflow, etc.).
+- [ ] Integration with object detection services (e.g. AWS SageMaker, Azure Custom Vision, etc.).
