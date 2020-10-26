@@ -91,6 +91,7 @@ class CartesianProductSuppression(Suppressor):
                     bounding_box_array.lookup_box(int(bids[1])),
                 )
             ):
+
                 complementary_bids.append(bids[1])
                 evaluated_bids.add(bids[0])
                 evaluated_bids.add(bids[1])
@@ -100,7 +101,7 @@ class CartesianProductSuppression(Suppressor):
             last_bid = bids[0]
         if not symmetric and len(non_boundary_bounding_box_ids) > 0:
             no_overlap_ixs = [
-                int(bounding_box_array.bounding_box_id_to_ix(x).ravel()) for x in list(non_boundary_bounding_box_ids)
+                int(bounding_box_array.bounding_box_id_to_ix(x)) for x in list(non_boundary_bounding_box_ids)
             ]
             print("IXS:")
             print(no_overlap_ixs)
@@ -112,23 +113,9 @@ class CartesianProductSuppression(Suppressor):
             selected_bids.extend(no_overlap_boxes)
             evaluated_bids.update(selected_bids)
 
-        # if len(all_bounding_box_idxs_list) > 0:
         return (
             selected_bids, set(list(evaluated_bids))
-                # np.add(
-                #     np.asarray(selected_bids, np.int64), np.min(list(all_bounding_box_idxs))
-                # ),
-                # np.add(
-                #     np.asarray(list(evaluated_bids), np.int64),
-                    # np.min(list(all_bounding_box_idxs)),
-                # ),
         )
-        # else:
-        #     return (
-        #         selected_bids, evaluated_bids
-                # np.asarray(selected_bids, np.int64,),
-                # np.asarray(list(evaluated_bids), np.int64,),
-            # )
 
     def _cp_transform(
             self,

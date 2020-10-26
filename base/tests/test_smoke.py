@@ -7,7 +7,7 @@ from .test_utils.test_setup import setup_test_case
 
 
 def smoke_test_setup():
-    bounding_boxes, confidences, labels = setup_test_case()
+    bounding_boxes, confidences, labels, _ = setup_test_case()
     bb = BoundingBoxArray(
         bounding_boxes=bounding_boxes, confidences=confidences, labels=labels
     )

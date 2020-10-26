@@ -113,27 +113,23 @@ class SectorSuppression(CartesianProductSuppression):
         if len(boundary_bids) == 0:
             return None
         assert len(bounding_box_array) > 0
-        print({
-            "BOUNDING_BOX_MIN": np.min(bounding_box_array.bounding_box_ids),
-            "BOUNDING_BOX_MAX": np.max(bounding_box_array.bounding_box_ids),
-            "ALL BIDS": all_bids,
-            "ALL_BIDS_ON_BOUNDARY": all_bids[on_boundary],
-            "BBA_IDS": bounding_box_array.bounding_box_ids,
-            "BBA_BOXES": bounding_box_array.bounding_boxes
-        })
-        prod = itertools.product(
-            np.add(all_bids[on_boundary], np.min(bounding_box_array.bounding_box_ids)),
-            np.add(all_bids, np.min(bounding_box_array.bounding_box_ids))
-        )
+
+        all_bids += np.min(bounding_box_array.bounding_box_ids)
+
+        for bid1 in all_bids[on_boundary]:
+            for bid2 in all_bids[on_boundary]:
+                if bid1 == bid2:
+                    continue
+
+        prod = itertools.product(all_bids[on_boundary], all_bids)
         selected_bids, evaluated_bids = self._evaluate_overlap(bounding_box_array, prod)
         evaluated_bids = np.asarray(list(evaluated_bids), dtype=np.int64)
         evaluated_bids_inv = np.ones(
             bounding_box_array.bounding_boxes.shape[0], np.bool
         )
 
-        # TODO: ? may be causing error in test_handle_boundaries6()
-        # evaluated_bids_inv_ixs = [bounding_box_array.bounding_box_id_to_ix(x) for x in evaluated_bids]
-        evaluated_bids_inv[evaluated_bids_inv] = 0
+        evaluated_bids_inv_ixs = [bounding_box_array.bounding_box_id_to_ix(x) for x in evaluated_bids]
+        evaluated_bids_inv[evaluated_bids_inv_ixs] = 0
 
         return bounding_box_array[np.asarray(selected_bids, dtype=np.int64)]
 

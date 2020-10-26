@@ -46,6 +46,13 @@ class BoundingBoxArray:
         else:
             self.bounding_box_ids = bounding_box_ids
 
+        sort_order = np.argsort(self.bounding_box_ids)
+
+        self.bounding_boxes = self.bounding_boxes[sort_order, :, :]
+        self.confidences = self.confidences[sort_order]
+        self.labels = self.labels[sort_order]
+        self.bounding_box_ids = self.bounding_box_ids[sort_order]
+
     def __getitem__(self, item: NDArray[(Any,), np.int64]):
         assert isinstance(item, np.ndarray)
         if item.shape[0] == 0:
@@ -229,18 +236,13 @@ class BoundingBoxArray:
             writer.writerows(rows)
 
     def bounding_box_id_to_ix(self, bid: int):
-        return np.argwhere(self.bounding_box_ids == int(bid)).ravel()
+        return int(np.argwhere(self.bounding_box_ids == int(bid)).ravel())
 
     def lookup_box(self, bid: int) -> NDArray[(2, 2), np.float64]:
         assert isinstance(bid, int)
         assert bid in self.bounding_box_ids
         ix = self.bounding_box_id_to_ix(bid)
-        # TODO: Fix this indexing
-        print("SHAPE1")
-        print(self.bounding_boxes.shape)
-        print("SHAPE2")
-        print(self.bounding_boxes[ix, :, :].shape)
-        box = self.bounding_boxes[ix, :, :][0, :, :]
+        box = self.bounding_boxes[ix, :, :]
         assert len(box.shape) == 2
         return box
 
