@@ -1,7 +1,7 @@
 from setuptools import setup  # type: ignore
 
 setup(
-    name="odToolbelt",
+    name="ODToolbelt",
     version="0.1.1",
     packages=[
         "od_toolbelt",
