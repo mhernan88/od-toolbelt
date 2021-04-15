@@ -38,6 +38,7 @@ jobs:
     - name: Install package
       run: |
         cd base
+        python setup.py build_ext
         pip install .
         cd ..
     - name: Test with pytest
