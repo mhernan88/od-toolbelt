@@ -6,24 +6,14 @@ import numpy as np
 from warnings import warn
 from nptyping import NDArray
 from typing import Any, Iterator, Optional, Union, Dict, List, Tuple
+from od_toolbelt.data_structures.bounding_box import BoundingBox
 
 
+# Delete - and replace with list of BoundingBox?
 class BoundingBoxArray:
-    dtypes = {
-        np.int8: "np.int8",
-        np.int16: "np.int16",
-        np.int32: "np.int32",
-        np.int64: "np.int64",
-        np.float32: "np.float32",
-        np.float64: "np.float64",
-    }
-
     def __init__(
-        self,
-        bounding_boxes: NDArray[(Any, 2, 2), np.float64],
-        confidences: NDArray[(Any,), np.float64],
-        labels: NDArray[(Any,), np.int64],
-        bounding_box_ids: Optional[NDArray[(Any,), np.int64]] = None,
+            self,
+            bounding_boxes: List[BoundingBox],
     ):
         if isinstance(bounding_boxes, tuple):
             bounding_boxes = np.asarray(bounding_boxes, dtype=np.float64)
